@@ -1,8 +1,12 @@
 ---
 title: 'Homework 4: Machine Learning'
-author: "Your name goes here"
+author: "Jamie McGraw"
 date: "`r Sys.Date()`"
 output:
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
   html_document:
     theme: flatly
     highlight: zenburn
@@ -10,10 +14,6 @@ output:
     toc: yes
     toc_float: yes
     code_folding: show
-  pdf_document:
-    toc: yes
-  word_document:
-    toc: yes
 ---
 
 ```{r}

@@ -82,8 +82,8 @@ params:
     enable: yes
     showcase:
       - image: lbs.jpg
-        subtitle: Ipsum Dolor Sit Amet
-        title: First Change
+        subtitle: Homework exercise at LBS
+        title: predicting credit card fraud using supervised ML
         url: blogs/risk_return
       - image: pic02.jpg
         subtitle: Feugiat Amet Tempus

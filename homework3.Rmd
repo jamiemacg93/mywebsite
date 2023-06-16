@@ -1,0 +1,833 @@
+---
+title: 'Homework 3: Databases, web scraping, and a basic Shiny app'
+author: "Jamie McGraw"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+```{r}
+#| label: load-libraries
+#| echo: false # This option disables the printing of code (only output is displayed).
+#| message: false
+#| warning: false
+rm(list =ls())
+library(tidyverse)
+library(wbstats)
+library(tictoc)
+library(skimr)
+library(countrycode)
+library(here)
+library(DBI)
+library(dbplyr)
+library(arrow)
+library(rvest)
+library(robotstxt) # check if we're allowed to scrape the data
+library(scales)
+library(sf)
+library(readxl)
+library(RSQLite)
+```
+
+# Money in UK politics
+
+```{r}
+sky_westminster <- DBI::dbConnect(
+  drv = RSQLite::SQLite(),
+  dbname = here::here("data", "sky-westminster-files.db")
+)
+getwd()
+#check table names, there are 7
+DBI::dbListTables(sky_westminster)
+
+appg_table <- dbReadTable(sky_westminster, "appgs")
+appg_donations <- dbReadTable(sky_westminster, "appg_donations")
+member_appgs <- dbReadTable(sky_westminster, "member_appgs")
+members_table <- dbReadTable(sky_westminster, "members")
+parties_table <- dbReadTable(sky_westminster, "parties")
+party_donations <- dbReadTable(sky_westminster, "party_donations")
+payments_table <- dbReadTable(sky_westminster, "payments")
+
+#for now am just going to use the locally stored data
+DBI::dbDisconnect(sky_westminster)
+
+#peak to see what is inside these tables
+str(appg_table)
+str(appg_donations)
+str(member_appgs)
+str(members_table)
+str(parties_table)
+str(party_donations)
+str(payments_table)
+```
+
+## Which MP has received the most amount of money? 
+
+You need to work with the `payments` and `members` tables and for now we just want the total among all years. To insert a new, blank chunk of code where you can write your beautiful code (and comments!), please use the following shortcut: `Ctrl + Alt + I` (Windows) or `cmd + option + I` (mac)
+```{r}
+#let's see what's in each table first
+str(members_table)
+str(payments_table)
+
+#so it looks like id matches the key members_id in the payments table. 
+mp_payments <- inner_join(members_table, payments_table, by = c("id"="member_id"))  
+
+#let's group the payments data and sort it
+mp_payments %>% 
+  group_by(id, name) %>% 
+  summarise(total_donation = sum(value)) %>% 
+  arrange(desc(total_donation))
+
+
+#let's check the top people manually to make sure the code is doing what we think it's doing
+#check theresa may, Geoffrey Cox, Boris Johnson --> yes it looks correct
+print(sum(mp_payments$value[mp_payments$id == "m8"]))
+print(sum(mp_payments$value[mp_payments$id == "m1508"]))
+print(sum(mp_payments$value[mp_payments$id == "m1423"]))
+```
+
+
+## Any `entity` that accounts for more than 5% of all donations?
+```{r}
+#remind ourselves how the table is structured
+str(mp_payments)
+#so we have a payment id with an entity linked to each payment --> let's group_by entity, then divide by total 
+mp_payments %>%
+  group_by(entity) %>% 
+  summarise(entity_total = sum(value)) %>% 
+  mutate(donation_percent = round(entity_total/sum(entity_total)*100,2)) %>% 
+  arrange(desc(donation_percent))
+#OK so wither LLP donated more than 5% (5.25%) and they paid this sum to ...Geoffrey Cox
+mp_payments %>% 
+  filter(entity == "Withers LLP") %>% 
+  select(name, entity, value, date) %>% 
+  arrange(desc(value))
+```
+
+Is there any `entity` whose donations account for more than 5% of the total payments given to MPs over the 2020-2022 interval? Who are they and who did they give money to?
+
+```{r}
+
+#I think I answered this question above? 
+
+
+#Question is slightly unclear: I'll answer this below:
+#a) For each entity, what percentage of its total donations does each donation to an MP constitute?
+#b) For each MP, what percentage of their total donations does each donation from an entity constitute?
+         
+#first let's peak at the largest value donations and see how the proportions come out 
+#answer --> large value donations often account for 100% of the entities donation but not MP totals        
+donation_concentration <- mp_payments %>%
+  group_by(entity) %>%
+  mutate(total_donation_by_entity = sum(value),
+         percent_of_entity_donation = round(value / total_donation_by_entity * 100, 2)) %>%
+  group_by(name) %>%
+  mutate(total_donation_to_mp = sum(value),
+         percent_of_mp_donation = round(value / total_donation_to_mp * 100, 2)) %>%
+  ungroup() %>%
+  select(name, entity, value, percent_of_entity_donation, percent_of_mp_donation, id.y) %>% 
+  arrange(desc(value))
+
+print(donation_concentration)
+#now let's verify that concentrated entity donations doesn't imply concentrated MP receipts
+#answer --> So Theresa May has 10+ donations before she gets to 50% of all donations whereas Boris has extremely concentrated payments coming from just 4 donations 
+  donation_concentration %>% 
+    arrange(desc(percent_of_entity_donation)) %>% 
+    select(name,entity,percent_of_entity_donation, percent_of_mp_donation)
+  
+#now let's double check where exactly MPs get most of their money
+#answer --> most people who get all or most of their money from one source have tiny donation amounts (which makes mathematical sense)
+  
+  donation_concentration %>% 
+    arrange(desc(percent_of_mp_donation)) %>% 
+    select(name,value, percent_of_entity_donation, percent_of_mp_donation,entity)
+
+```
+
+
+## Do `entity` donors give to a single party or not?
+
+```{r}
+#a little late but let's add party names so we know who donates to who more easily
+
+mp_payments_mod <- inner_join(mp_payments, parties_table, by = c("party_id"="id"))
+#and drop unnecessary data for now ("background" and "foreground")
+mp_payments_mod <- select(mp_payments_mod, -background, -foreground)
+
+#for each entity, count the number of distinct parties associated with their payments, and tell me which unique parties are associated with them
+  mp_payments_mod %>% 
+    group_by(entity) %>% 
+    summarise(count_distinct_parties = n_distinct(party_id), which_party = unique(name.y), donation_amt = sum(value)) %>% 
+    arrange(desc(count_distinct_parties), entity)
+  
+#answer --> yes, there a few organisation who seem to give equal donations to several parties
+```
+
+- How many distinct entities who paid money to MPS are there?
+- How many (as a number and %) donated to MPs belonging to a single party only?
+
+```{r}
+
+#distinct entities = 2213
+print(n_distinct(mp_payments_mod$entity))
+
+#count the number of distinct entities from the section above whose distinct party = 1
+#answer = 2036
+
+  count_ent_one_part <-n_distinct(
+                        #code from above
+                        mp_payments_mod %>% 
+                          group_by(entity) %>% 
+                          summarise(count_distinct_parties = n_distinct(party_id), which_party = unique(name.y), donation_amt = sum(value)) %>%
+                          #with a filter
+                          filter(count_distinct_parties == 1)
+                                  )
+
+#count the number of distinct entities whose distinct party >=2
+
+count_ent_many_part <-n_distinct(
+                        #code from above
+                        mp_payments_mod %>% 
+                          group_by(entity) %>% 
+                          summarise(count_distinct_parties = n_distinct(party_id), which_party = unique(name.y), donation_amt = sum(value)) %>%
+                          #with a filter
+                          filter(count_distinct_parties >= 2)
+                                  )
+
+print(count_ent_one_part)
+print(count_ent_many_part)
+print(percent(count_ent_one_part/(count_ent_many_part+count_ent_one_part)))
+
+#answer --> 2036 comprising 82% of all entities i.e. most entities only donated to one party. 
+```
+
+## Which party has raised the greatest amount of money in each of the years 2020-2022? 
+
+```{r}
+#the parties_donations table has the appropriate date by party. Let' s join the party ID to the parties_table so we can keep party names
+
+party_donations_mod <- inner_join(party_donations, parties_table, by = c("party_id" = "id"))
+party_donations_mod <- select(party_donations_mod, -background, -foreground)
+
+party_donations_mod %>% 
+  group_by(name, as.numeric(substr(year,1,4))) %>%
+  summarise(total_raised = sum(value)) %>% 
+  arrange(desc(total_raised))
+#use lubridate to just mutate year data column  
+party_donations_mod <- party_donations_mod %>% 
+  mutate(year = year(ymd(date)))
+
+#use slice_max to get the top three parties for each year
+party_donations_mod %>% 
+  group_by(name,year) %>% 
+  summarise(yearly_donation = sum(value)) %>% 
+  group_by(year) %>% 
+  slice_max(order_by = yearly_donation, n=3)
+#answer --> as expected, conservatives outperform labour by a large margin
+```
+
+
+I would like you to write code that generates the following table. 
+
+```{r echo=FALSE, out.width="80%"}
+knitr::include_graphics(here::here("images", "total_donations_table.png"), error = FALSE)
+
+#re-using code from above and mutating to create a column that captures the yearly donation as proportion for that year's total
+  
+graphable_donations<- party_donations_mod %>% 
+                        group_by(name,year) %>% 
+                        summarise(total_year_donation = sum(value)) %>%
+                        group_by(year) %>% 
+                        mutate(prop = total_year_donation/sum(total_year_donation)) %>% 
+                        arrange(year) %>% 
+                        ungroup()
+      
+print(graphable_donations) #matches the table (with small difference in column order)
+
+
+
+```
+
+
+... and then, based on this data, plot the following graph. 
+
+```{r echo=FALSE, out.width="80%"}
+knitr::include_graphics(here::here("images", "total_donations_graph.png"), error = FALSE)
+
+#first I'll order it as in the graph
+graphable_donations<- graphable_donations %>% 
+  arrange(year, -total_year_donation)
+
+print(graphable_donations)
+#let's drop "name" and re-add it as "party" as the last column instead of the first
+
+graphable_donations <- graphable_donations %>% 
+  relocate(name, .after = last_col()) %>% 
+  rename(Party = name)
+
+# Change the factor levels of "Party"
+graphable_donations$Party <- with(graphable_donations, factor(Party, levels = unique(Party)))
+
+#let's use ggplot
+ggplot(graphable_donations, aes(x = year, y = total_year_donation, fill = Party))+
+  geom_bar(stat = "identity", position = "dodge")+
+  labs(x= "",
+       y= "",
+       title = "Conservatives have captured the majority of political donations",
+       subtitle = "Donations to political parties, 2020-2022")
+
+
+
+ggplot(data = graphable_donations, aes(x = factor(year), y = total_year_donation, fill = name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "",
+       title = "Conservatives have captured the majority of political donations",
+       subtitle = "Donations to political parties, 2020-2022") 
+
+
+str(graphable_donations)
+```
+
+This uses the default ggplot colour pallete, as I dont want you to worry about using the [official colours for each party](https://en.wikipedia.org/wiki/Wikipedia:Index_of_United_Kingdom_political_parties_meta_attributes). However, I would like you to ensure the parties are sorted according to total donations and not alphabetically. You may even want to remove some of the smaller parties that hardly register on the graph. Would facetting help you?  
+
+Finally, when you are done working with the databse, make sure you close the connection, or disconnect from the database.
+
+```{r}
+dbDisconnect(sky_westminster)
+```
+
+
+# Anonymised Covid patient data from the CDC
+
+We will be using a dataset with [anonymous Covid-19 patient data that the CDC publishes every month](https://data.cdc.gov/Case-Surveillance/COVID-19-Case-Surveillance-Public-Use-Data-with-Ge/n8mc-b4w4). The file we will use was released on April 11, 2023, and has data on 98 million of patients, with 19 features. This file cannot be loaded in memory, but luckily we have the data in `parquet` format and we will use the `{arrow}` package.
+
+## Obtain the data
+
+The dataset `cdc-covid-geography` is in `parquet` format that {arrow}can handle. It is > 600Mb and too large to be hosted on Canvas or Github, so please download it from dropbox https://www.dropbox.com/sh/q1yk8mmnbbrzavl/AAAxzRtIhag9Nc_hODafGV2ka?dl=0 and save it in your `dsb` repo, under the `data` folder
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(arrow)
+
+tic() #start timer
+cdc_data <- open_dataset(here::here("data", "cdc-covid-geography"))
+toc() # stop timer
+
+
+glimpse(cdc_data)
+```
+Can you query the database and replicate the following plot?
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics(here::here("images", "covid-CFR-ICU.png"), error = FALSE)
+
+library(ggplot2)
+library(dplyr)
+
+#have decided to filter for the following to filter for the following:
+#current status = lab confirmed, death_yn filter for yes and no, icu_yn filter for yes and no
+
+# Calculate CFR for each combination of age group and gender
+    
+CFR_multi <- cdc_data %>%
+  filter(current_status == "Laboratory-confirmed case",
+         sex %in% c("Male", "Female"),
+         icu_yn %in% c("Yes", "No"),
+         age_group != "Missing") %>% 
+  mutate(death = ifelse(death_yn == "Yes", 1, 0))
+
+#ask brent or someone else about this below    
+
+CFR_multi_1 <- cdc_data %>%
+  filter(current_status == "Laboratory-confirmed case",
+         sex %in% c("Male", "Female"),
+         icu_yn %in% c("Yes", "No"),
+         age_group != "Missing") %>% 
+  mutate(death = ifelse(death_yn == "Yes", 1, 0)) %>%
+  group_by(age_group, sex, icu_yn) %>%
+  summarise(total_cases = n(),
+            total_deaths = sum(death, na.rm = TRUE),
+            cfr = total_deaths / total_cases * 100) %>%
+  collect()
+
+CFR_multi$icu_yn <- factor(CFR_multi$icu_yn, levels = c("Yes", "No"))
+
+
+
+
+
+####################################################################################################
+###########Test code#############
+
+#let's try group_by gender and age and perform  calculation on it
+cdc_data %>% 
+  group_by(sex,age_group) %>% 
+  filter(sex %in% c("Male", "Female")) %>% 
+  summarise(count = n()) %>% 
+  arrange(sex, age_group) %>% 
+  collect()
+
+#OK now we need to define the ICU and CFR rates
+cdc_data %>%
+  unique(cdc_data$icu_yn) %>% 
+  collect()
+#OK so unclear whether we need to exclude Unknown from the "Not ICU" count, I would lean towards yes. 
+cdc_data %>% 
+  group_by(icu_yn) %>% 
+  summarise(count = n()) %>% 
+  collect()
+
+cdc_data %>% 
+  group_by(current_status) %>% 
+  summarise(count = n()) %>% 
+  collect()
+  
+#CFR rate is the number of people who were confirmed infected divided by the number of people in the population, 
+#from below it looks like there aer loads of mssing, unknown or NA values
+cdc_data %>% 
+  group_by(death_yn) %>% 
+  summarise(count = n()) %>% 
+  collect()
+#cdc_data %>% 
+#so we'll need to filter for only lab confirmed cases. 
+cdc_data %>% 
+  group_by(death_yn,current_status, icu_yn) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(icu_yn),desc(death_yn)) %>% 
+  collect()
+
+####################################################################################################
+```
+
+The previous plot is an aggregate plot for all three years of data. What if we wanted to plot Case Fatality Ratio (CFR) over time? Write code that collects the relevant data from the database and plots the following
+
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics(here::here("images", "cfr-icu-overtime.png"), error = FALSE)
+
+#
+CFR_multi_1 <- cdc_data %>%
+  filter(current_status == "Laboratory-confirmed case",
+         sex %in% c("Male", "Female"),
+         icu_yn %in% c("Yes", "No"),
+         age_group != "Missing") %>% 
+  mutate(death = ifelse(death_yn == "Yes", 1, 0)) %>%
+  group_by(age_group, sex, icu_yn, case_month) %>%
+  summarise(total_cases = n(),
+            total_deaths = sum(death, na.rm = TRUE),
+            cfr = total_deaths / total_cases * 100) %>%
+  collect()
+
+
+CFR_multi_1 <- CFR_multi_1 %>%
+  mutate(case_month = ymd(paste0(case_month, "-01"))) %>%
+  arrange(case_month) %>%
+  mutate(case_month = format(case_month, "%Y-%m"))
+
+#make the icu_yn display yes and no in the same order dispplayed in the graph
+CFR_multi_1$icu_yn <- factor(CFR_multi_1$icu_yn, levels = c("Yes", "No"))
+
+#filter out the 0 - 17 category because it isn't displayed in the graph that's given. 
+CFR_multi_1_filtered <- CFR_multi_1 %>%
+  filter(age_group != "0 - 17 years")
+
+#plot the graph
+ggplot(CFR_multi_1_filtered, aes(x = case_month, y = cfr, color = age_group, group = interaction(age_group, sex, icu_yn))) +
+  geom_line() +
+  geom_text(aes(label = round(cfr, 1)), hjust = -0.5, vjust = -0.5, size = 3, check_overlap = TRUE) +
+  facet_grid(icu_yn ~ sex) +
+  labs(x = "Case Month", y = "CFR (%)", color = "Age Group") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10),  # Reduce text size here
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA))  # Add border here
+
+
+
+
+summary(CFR_multi_1)
+
+unique(CFR_multi_1$sex)
+```
+
+
+For each patient, the dataframe also lists the patient's states and county [FIPS code](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code). The CDC also has information on the [NCHS Urban-Rural classification scheme for counties](https://www.cdc.gov/nchs/data_access/urban_rural.htm)
+```{r}
+urban_rural <- read_xlsx(here::here("data", "NCHSURCodes2013.xlsx")) %>% 
+  janitor::clean_names() 
+
+str(urban_rural)
+```
+
+
+Each county belongs in seix diffent categoreis, with categories 1-4 being urban areas and categories 5-6 being rural, according to the following criteria captured in `x2013_code`
+
+Category name
+
+1. Large central metro - 1 million or more population and contains the entire population of the largest principal city
+2. large fringe metro - 1 million or more poulation, but does not qualify as 1
+3. Medium metro - 250K - 1 million population
+4. Small metropolitan population < 250K
+5. Micropolitan 
+6. Noncore
+
+Can you query the database, extract the relevant information, and reproduce the following two graphs that look at the Case Fatality ratio (CFR) in different counties, according to their population?
+
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics(here::here("images", "cfr-county-population.png"), error = FALSE)
+
+glimpse(cdc_data)
+str(urban_rural)
+
+#after some trial an error, it looks like we need to convert the fips code in urban_rural to be the same data type
+#as in the cdc_data so let's do that first.  
+urban_rural <- urban_rural %>%
+  mutate(fips_code = as.integer(fips_code))
+
+#let's first filter down the table to reduce the size of the computation in the join
+CFR_multi_urbanr <- cdc_data %>%
+  filter(current_status == "Laboratory-confirmed case") %>%
+  # Join with urban_rural data frame
+  inner_join(urban_rural, by = c("county_fips_code" = "fips_code")) %>%
+  # Create urban_category based on x2013_code
+  mutate(urban_category = case_when(
+    x2013_code == 1 ~ "Large central metro",
+    x2013_code == 2 ~ "Large fringe metro",
+    x2013_code == 3 ~ "Medium metro",
+    x2013_code == 4 ~ "Small metropolitan",
+    x2013_code == 5 ~ "Micropolitan",
+    x2013_code == 6 ~ "Noncore"
+  )) %>%
+  mutate(death = ifelse(death_yn == "Yes", 1, 0)) %>%
+  # Group by case_month and urban_category
+  group_by(case_month, urban_category) %>%
+  summarise(total_cases = n(),
+            total_deaths = sum(death, na.rm = TRUE),
+            cfr = total_deaths / total_cases * 100) %>%
+  collect()
+  
+#make sure our case_month variable is formatted in date format
+CFR_multi_urbanr <- CFR_multi_urbanr %>%
+  mutate(case_month = ymd(paste0(case_month, "-01"))) %>%
+  arrange(case_month) %>%
+  mutate(case_month = format(case_month, "%Y-%m"))
+
+#plot the lines
+ggplot(CFR_multi_urbanr, aes(x = case_month, y = cfr, color = urban_category, group = interaction(urban_category))) +
+  geom_line() +
+  geom_text(aes(label = round(cfr, 1)), hjust = 0.3, vjust = -0.3, size = 2, check_overlap = TRUE) +
+  facet_wrap("urban_category", scales = "free_y", ncol = 2) +  #define the y-axis range to be variable with each graph
+  labs(x = NULL, y = NULL, title = "Covid CFR % by county") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = -0.5, size = 2),  
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA))+  #create a border
+  guides(color = "none") #remove the colour legend to create more space for the graphs
+
+
+
+```
+
+
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics(here::here("images", "cfr-rural-urban.png"), error = FALSE)
+
+CFR_multi_urbanr <- CFR_multi_urbanr %>% 
+  mutate(urb_rural_binary = case_when(
+    urban_category == "Large central metro" ~ "Urban",
+    urban_category == "Large fringe metro" ~ "Urban",
+    urban_category == "Medium metro" ~ "Urban",
+    urban_category == "Small metropolitan" ~ "Urban",
+    urban_category == "Micropolitan"~ "Rural",
+    urban_category == "Noncore" ~ "Rural"
+  ))
+
+#create a aggregated urban/rural binary deaths and CFR metric
+urban_binary <- CFR_multi_urbanr %>%
+  group_by(urb_rural_binary, case_month) %>% 
+  summarise(total_deaths = sum(total_deaths), total_cases = sum(total_cases), cfr = total_deaths/total_cases*100)
+
+#ensure case_month is formatted properly
+urban_binary <- urban_binary %>%
+  mutate(case_month = ymd(paste0(case_month, "-01"))) %>%
+  arrange(case_month) %>%
+  mutate(case_month = format(case_month, "%Y-%m"))
+
+
+#plot the graph
+ggplot(urban_binary, aes(x = case_month, y = cfr, color = urb_rural_binary, group = interaction(urb_rural_binary))) +
+  geom_line() +
+  geom_text(aes(label = round(cfr, 1)), hjust = 0.3, vjust = -0.3, size = 3, check_overlap = TRUE) +
+  #facet_wrap("urban_category") +
+  labs(x = NULL, y = NULL, title = "Covid CFR % by rural and urban binary") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = -0.5, size = 3),  
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA))+  #create a border
+  guides(color = "none") #remove the colour legend to create more space for the graphs
+
+```
+
+
+# Money in US politics
+
+In the United States, [*"only American citizens (and immigrants with green cards) can contribute to federal politics, but the American divisions of foreign companies can form political action committees (PACs) and collect contributions from their American employees."*](https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs)
+
+We will scrape and work with data foreign connected PACs that donate to US political campaigns. The data for foreign connected PAC contributions in the 2022 election cycle can be found at https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/2022. Then, we will use a similar approach to get data such contributions from previous years so that we can examine trends over time.
+
+All data come from [OpenSecrets.org](https://www.opensecrets.org), a *"website tracking the influence of money on U.S. politics, and how that money affects policy and citizens' lives"*.
+
+```{r}
+#| label: allow-scraping-opensecrets
+#| warning: false
+#| message: false
+rm(list = ls())
+
+library(robotstxt)
+paths_allowed("https://www.opensecrets.org")
+
+base_url <- "https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/2022"
+
+contributions_tables <- base_url %>%
+  read_html() 
+
+```
+
+- First, make sure you can scrape the data for 2022. Use janitor::clean_names() to rename variables scraped using `snake_case` naming. 
+
+- Clean the data: 
+
+    -   Write a function that converts contribution amounts in `total`, `dems`, and `repubs` from character strings to numeric values.
+    -   Separate the `country_of_origin_parent_company` into two such that country and parent company appear in different columns for country-level analysis.
+    
+```{r}
+library(robotstxt)
+paths_allowed("https://www.opensecrets.org")
+
+base_url <- "https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/2022"
+
+contributions_tables <- base_url %>%
+  read_html() 
+
+#pull PAC name
+pac_names <- vector()
+pac_names <- contributions_tables %>% 
+  html_nodes(css = ".color-category") %>% 
+  html_text(pac_names)
+
+country_company <- vector()
+country_company <- contributions_tables %>% 
+  html_nodes(css = ".color-category + td") %>%
+  html_text(country_company)
+
+pac_donation <- vector()
+pac_donation <- contributions_tables %>% 
+  html_nodes(css = ".number") %>% 
+  html_text(pac_donation)
+
+#create the dataframe
+pac_df <- matrix(pac_donation, nrow = 215, byrow = TRUE)
+
+#Add on the additional columns
+pac_df <- as.data.frame(pac_df) %>% 
+  mutate(country_company = country_company, pac_names = pac_names)
+
+colnames(pac_df) <- c("total", "dems", "repubs","country_company", "pac_names")
+    
+
+janitor::clean_names(pac_df)
+
+# write a function to parse_currency
+parse_currency <- function(x){
+  x %>%
+    
+    # remove dollar signs
+    str_remove("\\$") %>%
+    
+    # remove all occurrences of commas
+    str_remove_all(",") %>%
+    
+    # convert to numeric
+    as.numeric()
+}
+
+# clean country/parent co and contributions 
+pac_df <- pac_df %>%
+  separate(country_company, 
+           into = c("country", "parent"), 
+           sep = "/", 
+           extra = "merge") %>%
+  mutate(
+    total = parse_currency(total),
+    dems = parse_currency(dems),
+    repubs = parse_currency(repubs)
+  )
+
+```
+
+
+
+
+-   Write a function called `scrape_pac()` that scrapes information from the Open Secrets webpage for foreign-connected PAC contributions in a given year. This function should
+
+    -   have one input: the URL of the webpage and should return a data frame.
+    -   add a new column to the data frame for `year`. We will want this information when we ultimately have data from all years, so this is a good time to keep track of it. Our function doesn't take a year argument, but the year is embedded in the URL, so we can extract it out of there, and add it as a new column. Use the `str_sub()` function to extract the last 4 characters from the URL. You will probably want to look at the help for this function to figure out how to specify "last 4 characters".
+
+-   Define the URLs for 2022, 2020, and 2000 contributions. Then, test your function using these URLs as inputs. Does the function seem to do what you expected it to do?
+
+-   Construct a vector called `urls` that contains the URLs for each webpage that contains information on foreign-connected PAC contributions for a given year.
+
+-   Map the `scrape_pac()` function over `urls` in a way that will result in a data frame called `contributions_all`.
+
+-   Write the data frame to a csv file called `contributions-all.csv` in the `data` folder.
+
+
+# Scraping consulting jobs
+
+The website [https://www.consultancy.uk/jobs/](https://www.consultancy.uk/jobs) lists job openings for consulting jobs.
+
+```{r}
+#| label: consulting_jobs_url
+#| eval: false
+
+library(robotstxt)
+paths_allowed("https://www.consultancy.uk") #is it ok to scrape?
+
+base_url <- "https://www.consultancy.uk/jobs/page/1"
+
+listings_html <- base_url %>%
+  read_html()
+
+
+```
+
+Identify the CSS selectors in order to extract the relevant information from this page, namely
+
+1. job 
+1. firm
+1. functional area
+1. type
+
+Can you get all pages of ads, and not just the first one, `https://www.consultancy.uk/jobs/page/1` into a dataframe?
+
+
+-   Write a function called `scrape_jobs()` that scrapes information from the webpage for consulting positions. This function should
+
+    -   have one input: the URL of the webpage and should return a data frame with four columns (variables): job, firm, functional area, and type
+
+    -   Test your function works with other pages too, e.g., https://www.consultancy.uk/jobs/page/2. Does the function seem to do what you expected it to do?
+
+    -   Given that you have to scrape `...jobs/page/1`, `...jobs/page/2`, etc., define your URL so you can join multiple stings into one string, using `str_c()`. For instnace, if `page` is 5, what do you expect the following code to produce?
+    
+```
+base_url <- "https://www.consultancy.uk/jobs/page/1"
+url <- str_c(base_url, page)
+```
+
+-   Construct a vector called `pages` that contains the numbers for each page available
+
+
+-   Map the `scrape_jobs()` function over `pages` in a way that will result in a data frame called `all_consulting_jobs`.
+
+-   Write the data frame to a csv file called `all_consulting_jobs.csv` in the `data` folder.
+
+```{r}
+
+rm(list = ls())
+get_page <- function(pagenumber) {
+ 
+ #set starting URL and concatenate with page number so we can cycle through through the pages
+  base_url <- "https://www.consultancy.uk/jobs/page/"
+  url <- str_c(base_url, pagenumber)
+ #read in the data from the url of a given page
+  address <- read_html(url)
+ #select jobs data column
+  jobs <- address %>%
+    html_nodes(".title") %>%
+    html_text()
+ 
+ #select firm data column 
+  firm <- address %>%
+    html_nodes(".hide-phone .row-link") %>%
+    html_text()
+ 
+  #select functional_area data column
+  functional_area <- address %>%
+    html_nodes(".initial") %>%
+    html_text2()
+ 
+  #select type data column
+  type  <- address %>%
+    html_nodes(".hide-tablet-landscape .row-link") %>%
+    html_text2()
+  
+  #convert each into on dataframe
+  jobs_df <- tibble(
+    jobs = jobs,
+     firm = firm,
+     functional_area = functional_area,
+     type = type,
+    page = pagenumber
+  )
+ #make sure the dataframe is returned
+  return(jobs_df)
+}
+
+#cycle thorugh pages 1 through 8
+pages <-  1:8
+
+#cycle through each page using the integers above ("pages") and the function defined. 
+alljobs <- map_df(pages, get_page)
+```
+
+
+# Create a shiny app 
+
+We have already worked with the data on electricity production and usage, GDP/capita and CO2/capita since 1990.
+You have to create a simple Shiny app, where a user chooses a country from a drop down list and a time interval between 1990 and 2020 and shiny outputs the following
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics(here::here("images", "electricity-shiny.png"), error = FALSE)
+```
+
+You can use chatGPT to get the basic layout of Shiny app, but you need to adjust the code it gives you. Ask chatGPT to create the Shiny app using the `gapminder` data and make up similar requests for the inputs/outpus you are thinking of deploying.
+
+
+
+# Deliverables
+
+There is a lot of explanatory text, comments, etc. You do not need these, so delete them and produce a stand-alone document that you could share with someone. Knit the edited and completed R Markdown (Rmd) file as a Word or HTML document (use the "Knit" button at the top of the script editor window) and upload it to Canvas. You must be committing and pushing your changes to your own Github repo as you go along.
+
+# Details
+
+-   Who did you collaborate with: Jenna Thmoas
+-   Approximately how much time did you spend on this problem set: probably 12 hours 
+-   What, if anything, gave you the most trouble: knitting and directory/github/setup based bugs
+
+**Please seek out help when you need it,** and remember the [15-minute rule](https://dsb2023.netlify.app/syllabus/#the-15-minute-rule){target="_blank"}. You know enough R (and have enough examples of code from class and your readings) to be able to do this. If you get stuck, ask for help from others, post a question on Slack-- and remember that I am here to help too!
+
+> As a true test to yourself, do you understand the code you submitted and are you able to explain it to someone else?
+
+# Rubric
+
+13/13: Problem set is 100% completed. Every question was attempted and answered, and most answers are correct. Code is well-documented (both self-documented and with additional comments as necessary). Used tidyverse, instead of base R. Graphs and tables are properly labelled. Analysis is clear and easy to follow, either because graphs are labeled clearly or you've written additional text to describe how you interpret the output. Multiple Github commits. Work is exceptional. I will not assign these often.
+
+8/13: Problem set is 60--80% complete and most answers are correct. This is the expected level of performance. Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). A few Github commits.
+
+5/13: Problem set is less than 60% complete and/or most answers are incorrect. This indicates that you need to improve next time. I will hopefully not assign these often. Displays minimal effort. Doesn't complete all components. Code is poorly written and not documented. Uses the same type of plot for each graph, or doesn't use plots appropriate for the variables being analyzed. No Github commits.
