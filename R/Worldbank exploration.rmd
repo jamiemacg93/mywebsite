@@ -1,0 +1,322 @@
+
+```{r}
+library 
+
+
+```
+
+```{r}
+#| label: load-libraries
+#| echo: false # This option disables the printing of code (only output is displayed).
+#| message: false
+#| warning: false
+options(scipen = 999) #disable scientific notation
+library(tidyverse)
+library(tidymodels)
+library(GGally)
+library(sf)
+library(leaflet)
+library(janitor)
+library(rpart.plot)
+library(here)
+library(scales)
+library(vip)
+library(C50)
+library(GGally)
+```
+
+
+```{r}
+# download libraries ------------------------------------------------------
+install.packages("WDIplus")
+options(scipen = 999) #disable scientific notation
+library(tidyverse)
+library(tidymodels)
+library(GGally)
+library(sf)
+library(leaflet)
+library(janitor)
+library(rpart.plot)
+library(here)
+library(scales)
+library(vip)
+library(C50)
+library(WDI)
+library(cluster)
+library(factoextra)
+library(NbClust)
+library(mclust)
+library(kernlab)
+library(caret)
+# create database ---------------------------------------------------------
+#how big is big? the central question of this mini project is "what is a lot?" for a range of commonly understood and used development indicators 
+```
+
+#let's start with GDP per capita, GDP overall, populatio total, Energy use, urgan population, poverty porportion  
+```{r}
+
+indicators <- c("NY.GDP.PCAP.CD", "NY.GDP.MKTP.CD", "SP.POP.TOTL", "EG.USE.PCAP.KG.OE", "SP.URB.TOTL.IN.ZS", "SI.POV.DDAY")
+#make sure we only have UN recognised countries (rather than regions)
+real_countries_list <- c("AF","AX","AL","DZ","AS","AD","AO","AI","AQ","AG","AR","AM","AW","AU","AT","AZ","BS","BH","BD","BB","BY","BE","BZ","BJ","BM","BT","BO","BQ","BA","BW","BR","IO","BN","BG","BF","BI","KH","CM","CA","CV","KY","CF","TD","CL","CN","CX","CC","CO","KM","CG","CD","CK","CR","CI","HR","CU","CW","CY","CZ","DK","DJ","DM","DO","EC","EG","SV","GQ","ER","EE","SZ","ET","FK","FO","FJ","FI","FR","GF","PF","TF","GA","GM","GE","DE","GH","GI","GR","GL","GD","GP","GU","GT","GG","GN","GW","GY","HT","HM","VA","HN","HK","HU","IS","IN","ID","XZ","IR","IQ","IE","IM","IL","IT","JM","JP","JE","JO","KZ","KE","KI","KP","KR","KW","KG","LA","LV","LB","LS","LR","LY","LI","LT","LU","MO","MG","MW","MY","MV","ML","MT","MH","MQ","MR","MU","YT","MX","FM","MD","MC","MN","ME","MS","MA","MZ","MM","NA","NR","NP","NL","NC","NZ","NI","NE","NG","NU","NF","MK","MP","NO","OM","PK","PW","PS","PA","PG","PY","PE","PH","PN","PL","PT","PR","QA","RE","RO","RU","RW","BL","SH","KN","LC","MF","PM","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SX","SK","SI","SB","SO","ZA","GS","SS","ES","LK","SD","SR","SJ","SE","CH","SY","TW","TJ","TZ","TH","TL","TG","TK","TO","TT","TN","TR","TM","TC","TV","UG","UA","AE","GB","US","UM","UY","UZ","VU","VE","VN","VG","VI","WF","EH","YE","ZM","ZW")
+data <- WDI(
+  country = real_countries_list,
+  indicator = indicators,
+  start = 1960,
+  end = 2020,)
+
+#rename columns
+colnames(data) <- c("country","iso2", "iso3", "year",'gdp_percap','gdp','pop','energy','urban',)
+
+#let's first check some recent data
+data %>% 
+  filter(year %in% c(2020, 1970)) %>% 
+  mutate(year = factor(year)) %>% 
+  select(year, gdp, pop, urban, gdp_percap) %>% 
+  ggpairs(aes(color = year),size = 3,alpha = 1) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0))
+```
+
+
+  
+
+# Inspect each histogram --------------------------------------------------
+```{r}
+library(ggplot2)
+library(dplyr)
+
+data_filtered <- data %>%
+  filter(year %in% c(1970, 2020)) %>%
+  mutate(year = factor(year))
+
+# Variables to plot
+vars <- c("gdp", "pop", "urban", "gdp_percap")
+
+# Loop over the variables and create a plot for each
+for (var in vars) {
+  # Calculate mean for each year
+  median_values <- data_filtered %>%
+    group_by(year) %>%
+    summarise(median_value = median(.data[[var]], na.rm = TRUE))
+  
+  # Create density plot
+  p <- ggplot(data_filtered, aes_string(x = var, fill = "year")) +
+    geom_histogram(data = subset(data_filtered, year == 1970), alpha = 1) +
+    geom_histogram(data = subset(data_filtered, year == 2020), alpha = 0.8) +
+    geom_vline(data = subset(median_values, year == "1970"), 
+               aes(xintercept = median_value), 
+               linetype = "dashed", color = "red", size = 1) +
+    geom_vline(data = subset(median_values, year == "2020"), 
+               aes(xintercept = median_value), 
+               linetype = "dashed", color = "turquoise", size = 1) +
+    labs(title = paste("Histogram of", var, "for years 1970 and 2020"),
+         x = var,
+         y = "frequency",
+         fill = "Year") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 0))
+  
+  # If variable is 'pop' or 'gdp', use scientific notation for x-axis
+  if (var %in% c("pop", "gdp")) {
+    p <- p + scale_x_continuous(labels = scales::scientific)
+  }
+  p <- p +
+    annotate("text", x = median_values$median_value[1], 
+             y = 90, label = median_values$median_value[1], 
+             vjust = 1.5, hjust = 0, color = "red") +
+    annotate("text", x = median_values$median_value[2], 
+             y = 60, label = median_values$median_value[2], 
+             vjust = 1.5, hjust = 0, color = "turquoise")
+  # Print the plot
+  print(p)
+}
+
+```
+
+
+
+#observations: 1. gdp, gdp percap, pop are very right skewed --> there are many poor countries and  
+
+library(cluster)
+library(factoextra)
+
+```{r}
+
+# hierarchichal clustering start ------------------------------------------
+
+
+# Filter data for the year 1970 and 2020
+data_1970 <- data %>% filter(year == 1970)
+data_2020 <- data %>% filter(year == 2020)
+
+# Keep only necessary variables and handle NA values
+data_1970_numeric <- na.omit(data_1970[, c("country", "gdp_percap", "gdp", "pop", "urban")])
+data_2020_numeric <- na.omit(data_2020[, c("country", "gdp_percap", "gdp", "pop", "urban")])
+
+# Check if the NA removal now leaves an adequate number of countries
+print(dim(data_1970_numeric))
+print(dim(data_2020_numeric))
+
+# Extract the country names 
+country_names_1970 <- data_1970_numeric$country
+country_names_2020 <- data_2020_numeric$country
+
+# Remove the country names from the numeric data frames
+data_1970_numeric_values <- data_1970_numeric[, !(names(data_1970_numeric) %in% c("country"))]
+data_2020_numeric_values <- data_2020_numeric[, !(names(data_2020_numeric) %in% c("country"))]
+
+# Scale the data
+data_1970_scaled <- scale(data_1970_numeric_values)
+data_2020_scaled <- scale(data_2020_numeric_values)
+
+# Hierarchical Clustering
+dist_matrix_1970 <- dist(data_1970_scaled)
+hc_1970 <- hclust(dist_matrix_1970, method = "ward.D2")
+
+dist_matrix_2020 <- dist(data_2020_scaled)
+hc_2020 <- hclust(dist_matrix_2020, method = "ward.D2")
+
+# Plot the dendrograms
+plot(hc_1970, main = "Hierarchical Clustering for 1970", labels = country_names_1970,cex = 0.7)
+plot(hc_2020, main = "Hierarchical Clustering for 2020", labels = country_names_2020,cex = 0.7)
+
+# Choose a number of clusters
+n_clusters <- 5  # Replace with the number of clusters you decide on
+
+# Cut the dendrogram and get cluster assignments
+clusters_1970 <- cutree(hc_1970, k = n_clusters)
+clusters_2020 <- cutree(hc_2020, k = n_clusters)
+
+# Add cluster assignments back to the original data
+data_1970_numeric$cluster <- clusters_1970
+data_2020_numeric$cluster <- clusters_2020
+
+# View the cluster assignments for each country
+head(data_1970_numeric)
+head(data_2020_numeric)
+
+# Create subset of 2020 data
+data_2020_numeric_subset <- data_2020_numeric[data_2020_numeric$country %in% data_1970_numeric$country, ]
+
+# Add year indicator
+data_1970_numeric$year <- "1970"
+data_2020_numeric_subset$year <- "2020"
+
+# Merge datasets
+data_combined <- rbind(data_1970_numeric, data_2020_numeric_subset)
+
+
+# Create scatter plot
+ggplot(data_combined, aes(x = gdp_percap, y = pop, color = year)) +
+  geom_point(aes(shape = as.factor(cluster)),size = 1) +
+  geom_text(aes(label = country), check_overlap = TRUE, vjust = 1.5, size = 2) +
+  scale_color_manual(values = c("1970" = "grey", "2020" = "red")) +
+  labs(x = "GDP per capita", y = "Population, total", title = "1970 vs 2020 data") +
+  theme_minimal()
+
+# Create scatter plot
+ggplot(data_combined, aes(x = gdp_percap, y = pop, color = as.factor(cluster), alpha = year)) +
+  geom_point(size = 1) +
+  geom_text(aes(label = country), check_overlap = TRUE, vjust = 1.5, size = 2) +
+  scale_alpha_manual(values = c("1970" = 0.3, "2020" = 1)) +
+  scale_color_discrete(name = "Cluster") +
+  labs(x = "GDP per capita", y = "Population, total", title = "1970 vs 2020 data") +
+  theme_minimal()
+
+# Highlights from each cluster --------------------------------------------
+
+
+top_countries_each_cluster <- data_combined %>%
+  filter(year == 1970) %>% 
+  group_by(cluster) %>%
+  slice(1:5) 
+
+top_countries_each_cluster_2020 <- data_combined %>% 
+  filter(year == 2020)
+
+# Join the data frames on both 'country' and 'year' fields
+subset_merged <- top_countries_each_cluster %>%
+  bind_rows(top_countries_each_cluster_2020 %>%
+              semi_join(top_countries_each_cluster, by = "country"))
+
+# Now create the plot
+ggplot(subset_merged, aes(x = gdp_percap, y = pop, color = as.factor(cluster), alpha = factor(year), group = country)) +
+  geom_point() +
+  geom_line(aes(group = country), alpha = 0.5, color = "grey") +
+  geom_text(aes(label = country), check_overlap = TRUE, vjust = 1.5) +
+  scale_alpha_manual(values = c("1970" = 0.3, "2020" = 1)) +
+  scale_color_discrete(name = "Cluster") +
+  labs(x = "GDP per capita", y = "Population, total", title = "First 3 countries in each cluster in 1970 vs 2020") +
+  theme_minimal()
+
+#GDP/capita vs Urban Population over time
+ggplot(subset_merged, aes(x = gdp_percap, y = urban, color = as.factor(cluster), alpha = factor(year), group = country)) +
+  geom_point() +
+  geom_line(aes(group = country), alpha = 0.5, color = "grey") +
+  geom_text(aes(label = country), check_overlap = TRUE, vjust = 1.5) +
+  scale_alpha_manual(values = c("1970" = 0.3, "2020" = 1)) +
+  scale_color_discrete(name = "Cluster") +
+  labs(x = "GDP per capita", y = "Urban Population", title = "First 3 countries in each cluster in 1970 vs 2020") +
+  theme_minimal()
+
+#Total population vs urban population
+ggplot(subset_merged, aes(x = pop, y = urban, color = as.factor(cluster), alpha = factor(year), group = country)) +
+  geom_point() +
+  geom_line(aes(group = country), alpha = 0.5, color = "grey") +
+  geom_text(aes(label = country), check_overlap = TRUE, vjust = 1.5) +
+  scale_alpha_manual(values = c("1970" = 0.3, "2020" = 1)) +
+  scale_color_discrete(name = "Cluster") +
+  labs(x = "Total Population", y = "Urban Population", title = "First 3 countries in each cluster in 1970 vs 2020") +
+  theme_minimal()
+#GDP vs urban population
+ggplot(subset_merged, aes(x = gdp, y = urban, color = as.factor(cluster), alpha = factor(year), group = country)) +
+  geom_point() +
+  geom_line(aes(group = country), alpha = 0.5, color = "grey") +
+  geom_text(aes(label = country), check_overlap = TRUE, vjust = 1.5) +
+  scale_alpha_manual(values = c("1970" = 0.3, "2020" = 1)) +
+  scale_color_discrete(name = "Cluster") +
+  labs(x = "GDP", y = "Urban Population", title = "First 3 countries in each cluster in 1970 vs 2020") +
+  theme_minimal()
+
+#GDP vs GDP per capita
+ggplot(subset_merged, aes(x = gdp, y = gdp_percap, color = as.factor(cluster), alpha = factor(year), group = country)) +
+  geom_point() +
+  geom_line(aes(group = country), alpha = 0.5, color = "grey") +
+  geom_text(aes(label = country), check_overlap = TRUE, vjust = 1.5) +
+  scale_alpha_manual(values = c("1970" = 0.3, "2020" = 1)) +
+  scale_color_discrete(name = "Cluster") +
+  labs(x = "GDP", y = "GDP_per cap", title = "First 3 countries in each cluster in 1970 vs 2020") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# hierarchical clustering end ---------------------------------------------
+```
+
+
+
+
+```{r}
+
+# k-mean clustering start -------------------------------------------------
+
+
+# Try k-means with different numbers of clusters and plot total within sum of squares
+wss <- numeric(15)
+for (k in 1:15) {
+  km_1970 <- kmeans(data_1970_scaled, centers = k)
+  wss[k] <- km_1970$tot.withinss
+}
+plot(1:15, wss, type = "b", xlab = "Number of clusters", ylab = "Total within-cluster sum of squares")
+
+# Visualize the clusters using a scatterplot of the first two principal components
+km_1970 <- kmeans(data_1970_scaled, centers = 3)  # Replace 3 with the number of clusters you decide on
+pcomp <- prcomp(data_1970_scaled)
+df <- as.data.frame(pcomp$x[,1:2])
+df$cluster <- km_1970$cluster
+colnames(df) <- c("PC1", "PC2", "Cluster")
+ggplot(df, aes(PC1, PC2, color = as.factor(Cluster))) +
+  geom_point() +
+  labs(color = "Cluster")
+```
+
+
+
