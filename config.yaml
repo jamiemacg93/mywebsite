@@ -88,9 +88,7 @@ params:
       - image: guncardsun.png
         subtitle: homework 2 assignment
         title: data exploration - mass shootings, card fraud, energy use
-        url: blogs/tempus
-        content: |
-          <iframe src="/c/Users/Jamie/Documents/mydsb2023/mywebsite/static/homework2.html" width="100%" height="500px"></iframe>
+        url: blogs/shoot_fraud_energy
       - image: pic03.jpg
         subtitle: Lorem Etiam Nullam
         title: Magna
