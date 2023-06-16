@@ -85,7 +85,7 @@ params:
         subtitle: Homework exercise at LBS
         title: predicting credit card fraud using supervised ML
         url: blogs/risk_return
-      - image: guncardsun.jpg
+      - image: guncardsun.png
         subtitle: homework 2 assignment
         title: data exploration - mass shootings, card fraud, energy use
         url: blogs/tempus
