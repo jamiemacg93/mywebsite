@@ -11,7 +11,7 @@ keywords: ""
 slug: tempus # slug is the shorthand URL address... no spaces plz
 title: Shootings, Fraud and Energy
   
-
+---
 
 
 

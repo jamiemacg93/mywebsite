@@ -18,7 +18,7 @@ title: Shooting, Fraud and Energy
 #| message: false
 #| warning: false
 #might need this later: brexit_results <- read_csv(here::here("data","brexit_results.csv"))#######################################
-
+library(blogdown)
 library(tidyverse)
 library(wbstats)
 library(skimr)
