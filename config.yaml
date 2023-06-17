@@ -1,16 +1,16 @@
 baseURL: https://datamcgraw.netlify.app/
 languageCode: en-us
-title: Porfolio website for Jamie McGraw's Data Science Projects
+title: Jamie McGraw Data Science Portfolio
 theme: forty
 googleAnalytics: ''
 disqusShortname: ''
 params:
   banner:
     buttonText: Get Started
-    subtitle: |-
-      # -- A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP
+    subtitle: "Jamie McGraw's website for Data Science projects"
+      # A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP
       # -- AND RELEASED UNDER THE CREATIVE COMMONS.
-    title: Porfolio website for Jamie McGraw's Data Science Projects
+    title: Jamie McGraw Data Science Portfolio
   blog: {}
   contact:
     address:
@@ -60,21 +60,21 @@ params:
   image: ''
   name: Jamie McGraw
   navigation:
-    button1:
-      - name: Get Started
-        url: blogs
-    button2:
-      - name: Log In
-        url: '#'
+    #button1:
+    #  - name: Get Started
+    #    url: blogs
+    #button2:
+    #  - name: Log In
+    #    url: '#'
     links:
       - name: Home
         url: '#'
       - name: Blogs
         url: blogs
-      - name: Generic Blog
-        url: blogs/ipsum
-      - name: Elements
-        url: elements.html
+    #  - name: Generic Blog
+    #   url: blogs/ipsum
+    # - name: Elements
+    #    url: elements.html
     menu: Menu
     subtitle: return home here
     title: Home
