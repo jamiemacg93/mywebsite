@@ -95,7 +95,7 @@ params:
         url: blogs/card_fraud
       - image: energy.jpg
         subtitle: Found some interesting insights about South Africa's energy crisis
-        title: Energy output
+        title: Energy output - South Africa focus
         url: blogs/energy
       - image: pic05.jpg
         subtitle: Ipsum Dolor Sit Amet

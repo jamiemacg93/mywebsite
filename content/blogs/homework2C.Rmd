@@ -9,7 +9,7 @@ image: sun.jpg # save picture in \static\img\blogs. Acceptable formats= jpg, jpe
 
 keywords: ""
 slug: energy # slug is the shorthand URL address... no spaces plz
-title: Energy Output
+title: Data Exploration of South Africa's Energy Output
 ---
 
 # Exploring sources of electricity production, CO2 emissions, and GDP per capita.
@@ -18,8 +18,8 @@ There are many sources of data on how countries generate their electricity and t
 
 We will get energy data from the Our World in Data website, and CO2 and GDP per capita emissions from the World Bank, using the `wbstats`package.
 
-```{r}
-#| message: false
+```{r, warning=FALSE}
+
 #| warning: false
 library(blogdown)
 library(tidyverse)
@@ -81,7 +81,7 @@ gdp_percap <- wb_data(country = "countries_only",
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #convert to long, tidy format by shifting the energy sources into one variable and their respective values into another
 energy_tidy <- energy %>% 
   pivot_longer(cols = c(4,5,6,7,8,9,10,11,12), 
@@ -99,7 +99,7 @@ merged_data <- left_join(merged_data, co2_percap, by = c('iso_code', "year"))
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #example code given
 knitr::include_graphics(here::here("images", "electricity-co2-gdp.png"), error = FALSE)
 
@@ -115,7 +115,7 @@ ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) +
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #given South Africa's electricity crisis, I was curious to see whether the increase share in renewables is attributable to dropping output overall, 
 # as we can see from the below, energy output overall has declined since 2010 :( 
 ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) + 
@@ -123,7 +123,7 @@ ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) +
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #############Question 2################
 
 #playing around with formatting to see what we can map in a 2d space, e.g. it seems like the relationship between GDP per capita and co2 is getting weaker over time

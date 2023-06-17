@@ -1,5 +1,5 @@
 ---
-categories:  
+bcategories:  
 - ""    #the front matter should be like the one found in, e.g., blog2.md. It cannot be like the normal Rmd we used
 - ""
 date: "2021-09-30"

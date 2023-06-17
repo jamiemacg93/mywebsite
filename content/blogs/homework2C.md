@@ -9,7 +9,7 @@ image: sun.jpg # save picture in \static\img\blogs. Acceptable formats= jpg, jpe
 
 keywords: ""
 slug: energy # slug is the shorthand URL address... no spaces plz
-title: Energy Output
+title: Data Exploration of South Africa's Energy Output
 ---
 
 # Exploring sources of electricity production, CO2 emissions, and GDP per capita.
@@ -20,12 +20,36 @@ We will get energy data from the Our World in Data website, and CO2 and GDP per 
 
 
 ```r
+#| warning: false
 library(blogdown)
 library(tidyverse)
+```
+
+```
+## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.2     ✔ readr     2.1.4
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ purrr     1.0.1     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+```
+
+```r
 library(wbstats)
 library(skimr)
 library(countrycode)
 library(here)
+```
+
+```
+## here() starts at C:/Users/Jamie/Documents/mydsb2023/mywebsite
+```
+
+```r
 # Download electricity data
 url <- "https://nyc3.digitaloceanspaces.com/owid-public/data/energy/owid-energy-data.csv"
 
@@ -49,7 +73,20 @@ energy <- read_csv(url) %>%
          energy_per_gdp,	# Energy consumption per unit of GDP. This is measured in kilowatt-hours per 2011 international-$.
          per_capita_electricity, #	Electricity generation per capita, measured in kilowatt-hours
   ) 
+```
 
+```
+## Rows: 21890 Columns: 129
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: ","
+## chr   (2): country, iso_code
+## dbl (127): year, population, gdp, biofuel_cons_change_pct, biofuel_cons_chan...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+```
+
+```r
 # Download data for C02 emissions per capita https://data.worldbank.org/indicator/EN.ATM.CO2E.PC
 co2_percap <- wb_data(country = "countries_only", 
                       indicator = "EN.ATM.CO2E.PC", 
@@ -119,10 +156,6 @@ ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) +
   geom_area(colour="grey90", alpha = 0.5, position = "fill")
 ```
 
-```
-## Warning: Removed 20 rows containing non-finite values (`stat_align()`).
-```
-
 <img src="/blogs/homework2C_files/figure-html/unnamed-chunk-3-2.png" width="672" />
 
 
@@ -132,10 +165,6 @@ ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) +
 # as we can see from the below, energy output overall has declined since 2010 :( 
 ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) + 
   geom_bar(stat = "identity")
-```
-
-```
-## Warning: Removed 20 rows containing missing values (`position_stack()`).
 ```
 
 <img src="/blogs/homework2C_files/figure-html/unnamed-chunk-4-1.png" width="672" />
@@ -155,10 +184,6 @@ ggplot(merged_data, aes(x = GDPpercap, y = co2percap, color = year))+
        shape = "GDP high (circle) vs low (triangle)")+
   scale_color_gradientn(colours = rainbow(10))+
   scale_shape_manual(values = c("circle"=1, "triangle"=2))
-```
-
-```
-## Warning: Removed 5167 rows containing missing values (`geom_point()`).
 ```
 
 <img src="/blogs/homework2C_files/figure-html/unnamed-chunk-5-1.png" width="672" />
