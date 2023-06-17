@@ -85,18 +85,18 @@ params:
         subtitle: Homework exercise at LBS
         title: predicting credit card fraud using supervised ML
         url: blogs/risk_return
-      - image: guncardsun.png
-        subtitle: homework 2 assignment
-        title: data exploration - mass shootings, card fraud, energy use
-        url: blogs/shoot_fraud_energy
-      - image: pic03.jpg
-        subtitle: Lorem Etiam Nullam
-        title: Magna
-        url: blogs/magna
-      - image: pic04.jpg
-        subtitle: Nisl Sed Aliquam
-        title: Ipsum
-        url: blogs/ipsum
+      - image: guns.jpg
+        subtitle: We found some interesting associations with mental health
+        title: Data exploration - mass shootings
+        url: blogs/shoot
+      - image: card.jpeg
+        subtitle: Let's explore when card fraud happens and to whom
+        title: Data exploration - card fraud
+        url: blogs/card_fraud
+      - image: energy.jpg
+        subtitle: Found some interesting insights about South Africa's energy crisis
+        title: Energy output
+        url: blogs/energy
       - image: pic05.jpg
         subtitle: Ipsum Dolor Sit Amet
         title: Consequat
