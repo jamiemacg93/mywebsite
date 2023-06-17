@@ -102,7 +102,7 @@ ggplot(race_counts, aes(x = reorder(race, -count), y = count)) +
   theme_minimal()
 ```
 
-<img src="/blogs/homework2A_files/figure-html/echo --1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-3-1.png" width="672" />
 
 -   Generate a boxplot visualizing the number of total victims, by type of location.
 
@@ -114,7 +114,7 @@ ggplot(mass_shootings, aes(x = location_type, y = total_victims)) +
   theme_minimal()
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-4-1.png" width="672" />
 
 -   Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
 
@@ -130,7 +130,7 @@ ggplot(no_outlier_shootings, aes(x = location_type, y = total_victims)) +
   theme_minimal()
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-5-1.png" width="672" />
 
 ### More open-ended questions
 
@@ -221,7 +221,7 @@ ggplot(danger_month, aes(x = reorder(month, month_order) , y = count)) +
   theme_minimal()
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-8-1.png" width="672" />
 
 -   How does the distribution of mass shooting fatalities differ between White and Black shooters? What about White and Latino shooters?
 
@@ -301,7 +301,7 @@ print(fatalities_black)
 ## Warning: Removed 2 rows containing missing values (`geom_bar()`).
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-9-1.png" width="672" />
 
 ```r
 print(fatalities_white)
@@ -316,7 +316,7 @@ print(fatalities_white)
 ## Removed 2 rows containing missing values (`geom_bar()`).
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-8-2.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-9-2.png" width="672" />
 
 
 
@@ -337,7 +337,7 @@ print(fatalities_white)
 ## Warning: Removed 2 rows containing missing values (`geom_bar()`).
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-10-1.png" width="672" />
 
 ```r
 print(fatalities_black)
@@ -352,7 +352,7 @@ print(fatalities_black)
 ## Removed 2 rows containing missing values (`geom_bar()`).
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-9-2.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-10-2.png" width="672" />
 
 ### Very open-ended
 
@@ -433,7 +433,7 @@ ggplot() +
 ## Removed 2 rows containing missing values (`geom_bar()`).
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-12-1.png" width="672" />
 
 ```r
 #let's look at injured next: again fewer injuries and fewer high double digit injuries so in general we can generalise that mentally ill shootings are more common and more deadly
@@ -453,7 +453,7 @@ ggplot() +
 ## Removed 2 rows containing missing values (`geom_bar()`).
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-11-2.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-12-2.png" width="672" />
 
 ```r
 #finally let's look at the age --> no obvious differences
@@ -473,7 +473,7 @@ ggplot() +
 ## Removed 2 rows containing missing values (`geom_bar()`).
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-11-3.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-12-3.png" width="672" />
 
 -   Assess the relationship between mental illness and total victims, mental illness and location type, and the intersection of all three variables.
 
@@ -494,5 +494,5 @@ ggplot(mass_shootings, aes(x = total_victims, y = location_type, color = prior_m
   xlim(0,120)
 ```
 
-<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-12-1.png" width="672" />
+<img src="/blogs/homework2A_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 

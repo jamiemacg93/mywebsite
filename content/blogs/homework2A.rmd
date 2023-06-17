@@ -73,7 +73,7 @@ yearly_shootings <- mass_shootings %>%
 
 -   Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest and each bar should show its number.
 
-```{r, echo -}
+```{r}
 
 #first let's count race 
 race_counts <- mass_shootings %>% 
