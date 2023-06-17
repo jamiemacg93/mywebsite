@@ -12,19 +12,7 @@ slug: shoot_fraud_energy # slug is the shorthand URL address... no spaces plz
 title: Shooting, Fraud and Energy
 ---
 
-```{r}
-#| label: load-libraries
-#| echo: false # This option disables the printing of code (only output is displayed).
-#| message: false
-#| warning: false
-#might need this later: brexit_results <- read_csv(here::here("data","brexit_results.csv"))#######################################
-library(blogdown)
-library(tidyverse)
-library(wbstats)
-library(skimr)
-library(countrycode)
-library(here)
-```
+
 
 # Data Visualisation - Exploration
 
@@ -36,14 +24,24 @@ In July 2012, in the aftermath of a mass shooting in a movie theater in Aurora, 
 
 ## Obtain the data
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
 
-mass_shootings <- read_csv(here::here("data", "mass_shootings.csv"))
-
-glimpse(mass_shootings)
+```
+## Rows: 125
+## Columns: 14
+## $ case                 <chr> "Oxford High School shooting", "San Jose VTA shoo…
+## $ year                 <dbl> 2021, 2021, 2021, 2021, 2021, 2021, 2020, 2020, 2…
+## $ month                <chr> "Nov", "May", "Apr", "Mar", "Mar", "Mar", "Mar", …
+## $ day                  <dbl> 30, 26, 15, 31, 22, 16, 16, 26, 10, 6, 31, 4, 3, …
+## $ location             <chr> "Oxford, Michigan", "San Jose, California", "Indi…
+## $ summary              <chr> "Ethan Crumbley, a 15-year-old student at Oxford …
+## $ fatalities           <dbl> 4, 9, 8, 4, 10, 8, 4, 5, 4, 3, 7, 9, 22, 3, 12, 5…
+## $ injured              <dbl> 7, 0, 7, 1, 0, 1, 0, 0, 3, 8, 25, 27, 26, 12, 4, …
+## $ total_victims        <dbl> 11, 9, 15, 5, 10, 9, 4, 5, 7, 11, 32, 36, 48, 15,…
+## $ location_type        <chr> "School", "Workplace", "Workplace", "Workplace", …
+## $ male                 <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, T…
+## $ age_of_shooter       <dbl> 15, 57, 19, NA, 21, 21, 31, 51, NA, NA, 36, 24, 2…
+## $ race                 <chr> NA, NA, "White", NA, NA, "White", NA, "Black", "B…
+## $ prior_mental_illness <chr> NA, "Yes", "Yes", NA, "Yes", NA, NA, NA, NA, NA, …
 ```
 
 | column(variable)     | description                                                                 |
@@ -67,8 +65,8 @@ glimpse(mass_shootings)
 
 -   Generate a data frame that summarizes the number of mass shootings per year.
 
-```{r}
 
+```r
 yearly_shootings <- mass_shootings %>% 
   group_by(year) %>% 
   summarise(count = n())
@@ -76,8 +74,8 @@ yearly_shootings <- mass_shootings %>%
 
 -   Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest and each bar should show its number.
 
-```{r}
 
+```r
 #first let's count race 
 race_counts <- mass_shootings %>% 
   na.omit() %>% 
@@ -86,27 +84,45 @@ race_counts <- mass_shootings %>%
   arrange(-count)
 
 print(race_counts)
+```
+
+```
+## # A tibble: 5 × 2
+##   race            count
+##   <chr>           <int>
+## 1 White              48
+## 2 Black              12
+## 3 Asian               7
+## 4 Latino              6
+## 5 Native American     1
+```
+
+```r
 #let's then plot this information, by far the majority are White
 ggplot(race_counts, aes(x = reorder(race, -count), y = count)) + 
   geom_bar(stat = "identity", fill = "steelblue") + 
   labs(x = "Race", y = "Number of Shooters", title = "Number of Mass Shooters by race") + 
   theme_minimal()
-
-
 ```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-4-1.png" width="672" />
 
 -   Generate a boxplot visualizing the number of total victims, by type of location.
 
-```{r}
+
+```r
 ggplot(mass_shootings, aes(x = location_type, y = total_victims)) +
   geom_boxplot(fill = "steelblue") +
   labs(x = "Type of Location", y = "Total Victims", title = "Total Victims by Type of Location") +
   theme_minimal()
 ```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+
 -   Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
 
-```{r}
+
+```r
 #evidently there is a huge outlier which is the Las Vegas Strip massacre so let's just exclude that datapoint manually
 no_outlier_shootings <- mass_shootings %>% 
   filter(total_victims <200)
@@ -117,14 +133,16 @@ ggplot(no_outlier_shootings, aes(x = location_type, y = total_victims)) +
   theme_minimal()
 ```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+
 ### More open-ended questions
 
 Address the following questions. Generate appropriate figures/tables to support your conclusions.
 
 -   How many white males with prior signs of mental illness initiated a mass shooting after 2000?
 
-```{r}
 
+```r
 #let's filter the data to match the criteria and then count the number of rows
 
 mental_illness_shootings <- mass_shootings %>%
@@ -132,14 +150,19 @@ mental_illness_shootings <- mass_shootings %>%
   summarise(count = n())
 
 print(mental_illness_shootings)
+```
 
+```
+## # A tibble: 1 × 1
+##   count
+##   <int>
+## 1    22
 ```
 
 -   Which month of the year has the most mass shootings? Generate a bar chart sorted in chronological (natural) order (Jan-Feb-Mar- etc) to provide evidence of your answer.
 
-```{r}
 
-
+```r
 #first count the number of shootings each month chronogically
 danger_month <- mass_shootings %>% 
   group_by(month) %>% 
@@ -171,7 +194,27 @@ danger_month <- danger_month %>%
   arrange(month_order)
 #check that the ordering is now correct --> yes it is. 
 print(danger_month)
+```
 
+```
+## # A tibble: 12 × 3
+##    month count month_order
+##    <chr> <int>       <dbl>
+##  1 Jan       7           1
+##  2 Feb      13           2
+##  3 Mar      12           3
+##  4 Apr      11           4
+##  5 May       8           5
+##  6 Jun      12           6
+##  7 Jul      10           7
+##  8 Aug       8           8
+##  9 Sep      10           9
+## 10 Oct      11          10
+## 11 Nov      12          11
+## 12 Dec      11          12
+```
+
+```r
 #now we print ggplot, looks like February has the most, but not by much, especially this is over 30 years.
 ggplot(danger_month, aes(x = reorder(month, month_order) , y = count)) + 
   geom_bar(stat = "identity", fill = "steelblue") + 
@@ -179,10 +222,52 @@ ggplot(danger_month, aes(x = reorder(month, month_order) , y = count)) +
   theme_minimal()
 ```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+
 -   How does the distribution of mass shooting fatalities differ between White and Black shooters? What about White and Latino shooters?
 
-```{r}
+
+```r
 str(mass_shootings)
+```
+
+```
+## spc_tbl_ [125 × 14] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+##  $ case                : chr [1:125] "Oxford High School shooting" "San Jose VTA shooting" "FedEx warehouse shooting" "Orange office complex shooting" ...
+##  $ year                : num [1:125] 2021 2021 2021 2021 2021 ...
+##  $ month               : chr [1:125] "Nov" "May" "Apr" "Mar" ...
+##  $ day                 : num [1:125] 30 26 15 31 22 16 16 26 10 6 ...
+##  $ location            : chr [1:125] "Oxford, Michigan" "San Jose, California" "Indianapolis, Indiana" "Orange, California" ...
+##  $ summary             : chr [1:125] "Ethan Crumbley, a 15-year-old student at Oxford High School, opened fire with a Sig Sauer 9mm pistol purchased "| __truncated__ "Samuel Cassidy, 57, a Valley Transportation Authorty employee, opened fire at a union meeting at the light rail"| __truncated__ "Brandon Scott Hole, 19, opened fire around 11 p.m. in the parking lot and inside the warehouse, and then shot h"| __truncated__ "Aminadab Gaxiola Gonzalez, 44, allegedly opened fire inside a small business at an office complex, killing at l"| __truncated__ ...
+##  $ fatalities          : num [1:125] 4 9 8 4 10 8 4 5 4 3 ...
+##  $ injured             : num [1:125] 7 0 7 1 0 1 0 0 3 8 ...
+##  $ total_victims       : num [1:125] 11 9 15 5 10 9 4 5 7 11 ...
+##  $ location_type       : chr [1:125] "School" "Workplace" "Workplace" "Workplace" ...
+##  $ male                : logi [1:125] TRUE TRUE TRUE TRUE TRUE TRUE ...
+##  $ age_of_shooter      : num [1:125] 15 57 19 NA 21 21 31 51 NA NA ...
+##  $ race                : chr [1:125] NA NA "White" NA ...
+##  $ prior_mental_illness: chr [1:125] NA "Yes" "Yes" NA ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   case = col_character(),
+##   ..   year = col_double(),
+##   ..   month = col_character(),
+##   ..   day = col_double(),
+##   ..   location = col_character(),
+##   ..   summary = col_character(),
+##   ..   fatalities = col_double(),
+##   ..   injured = col_double(),
+##   ..   total_victims = col_double(),
+##   ..   location_type = col_character(),
+##   ..   male = col_logical(),
+##   ..   age_of_shooter = col_double(),
+##   ..   race = col_character(),
+##   ..   prior_mental_illness = col_character()
+##   .. )
+##  - attr(*, "problems")=<externalptr>
+```
+
+```r
 #we'll just tell ggplot to fiter within ggpot
 fatalities_white <- ggplot(mass_shootings[mass_shootings$race == "White",], aes(x = fatalities)) +
   geom_histogram(fill = "steelblue", color = "white") + 
@@ -204,18 +289,84 @@ fatalities_black <- ggplot(mass_shootings[mass_shootings$race == "Black",], aes(
 
 #let's look at the graphs, black have far lower frequency, and lower fatalities per shooting
 print(fatalities_white)
-print(fatalities_black)
+```
 
 ```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+```
+## Warning: Removed 11 rows containing non-finite values (`stat_bin()`).
+```
+
+```
+## Warning: Removed 2 rows containing missing values (`geom_bar()`).
+```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+
+```r
+print(fatalities_black)
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+```
+## Warning: Removed 11 rows containing non-finite values (`stat_bin()`).
+## Removed 2 rows containing missing values (`geom_bar()`).
+```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-9-2.png" width="672" />
 
 ### Very open-ended
 
 -   Are mass shootings with shooters suffering from mental illness different from mass shootings with no signs of mental illness in the shooter?
 
-```{r}
+
+```r
 #remind ourselves how the database is organised
 str(mass_shootings)
+```
 
+```
+## spc_tbl_ [125 × 14] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+##  $ case                : chr [1:125] "Oxford High School shooting" "San Jose VTA shooting" "FedEx warehouse shooting" "Orange office complex shooting" ...
+##  $ year                : num [1:125] 2021 2021 2021 2021 2021 ...
+##  $ month               : chr [1:125] "Nov" "May" "Apr" "Mar" ...
+##  $ day                 : num [1:125] 30 26 15 31 22 16 16 26 10 6 ...
+##  $ location            : chr [1:125] "Oxford, Michigan" "San Jose, California" "Indianapolis, Indiana" "Orange, California" ...
+##  $ summary             : chr [1:125] "Ethan Crumbley, a 15-year-old student at Oxford High School, opened fire with a Sig Sauer 9mm pistol purchased "| __truncated__ "Samuel Cassidy, 57, a Valley Transportation Authorty employee, opened fire at a union meeting at the light rail"| __truncated__ "Brandon Scott Hole, 19, opened fire around 11 p.m. in the parking lot and inside the warehouse, and then shot h"| __truncated__ "Aminadab Gaxiola Gonzalez, 44, allegedly opened fire inside a small business at an office complex, killing at l"| __truncated__ ...
+##  $ fatalities          : num [1:125] 4 9 8 4 10 8 4 5 4 3 ...
+##  $ injured             : num [1:125] 7 0 7 1 0 1 0 0 3 8 ...
+##  $ total_victims       : num [1:125] 11 9 15 5 10 9 4 5 7 11 ...
+##  $ location_type       : chr [1:125] "School" "Workplace" "Workplace" "Workplace" ...
+##  $ male                : logi [1:125] TRUE TRUE TRUE TRUE TRUE TRUE ...
+##  $ age_of_shooter      : num [1:125] 15 57 19 NA 21 21 31 51 NA NA ...
+##  $ race                : chr [1:125] NA NA "White" NA ...
+##  $ prior_mental_illness: chr [1:125] NA "Yes" "Yes" NA ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   case = col_character(),
+##   ..   year = col_double(),
+##   ..   month = col_character(),
+##   ..   day = col_double(),
+##   ..   location = col_character(),
+##   ..   summary = col_character(),
+##   ..   fatalities = col_double(),
+##   ..   injured = col_double(),
+##   ..   total_victims = col_double(),
+##   ..   location_type = col_character(),
+##   ..   male = col_logical(),
+##   ..   age_of_shooter = col_double(),
+##   ..   race = col_character(),
+##   ..   prior_mental_illness = col_character()
+##   .. )
+##  - attr(*, "problems")=<externalptr>
+```
+
+```r
 #OK I'm just going to look at quantitative data and practice overlaying histograms at the same time. 
 
 #let's try create an overlay of distributions along a few variables. First let's save the filtered df's with mental illness vs no mental illness
@@ -237,7 +388,16 @@ ggplot() +
     title = "Overlay of fatality histograms"
   ) +
   xlim(0, 120)
+```
 
+```
+## Warning: Removed 2 rows containing missing values (`geom_bar()`).
+## Removed 2 rows containing missing values (`geom_bar()`).
+```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+
+```r
 #let's look at injured next: again fewer injuries and fewer high double digit injuries so in general we can generalise that mentally ill shootings are more common and more deadly
 ggplot() +
   geom_histogram(data = mentally_ill_shooters, aes(x = injured), fill = "steelblue", alpha = 0.5, binwidth = 1) +
@@ -248,7 +408,16 @@ ggplot() +
     title = "Overlay of injury histograms"
   ) +
   xlim(0, 120)
+```
 
+```
+## Warning: Removed 2 rows containing missing values (`geom_bar()`).
+## Removed 2 rows containing missing values (`geom_bar()`).
+```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-10-2.png" width="672" />
+
+```r
 #finally let's look at the age --> no obvious differences
 ggplot() +
   geom_histogram(data = mentally_ill_shooters, aes(x = age_of_shooter), fill = "steelblue", alpha = 0.5, binwidth = 1) +
@@ -259,12 +428,19 @@ ggplot() +
     title = "Overlay of injury histograms"
   ) +
   xlim(0, 120)
+```
 
 ```
+## Warning: Removed 2 rows containing missing values (`geom_bar()`).
+## Removed 2 rows containing missing values (`geom_bar()`).
+```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-10-3.png" width="672" />
 
 -   Assess the relationship between mental illness and total victims, mental illness and location type, and the intersection of all three variables.
 
-```{r}
+
+```r
 #we're just going to visually inspect this: visually, we can see there are more shootings (dots) with prior mentally ill shooters,
 #we can see there are more shootings with high number of victims
 #we can see thre are relatively more shootings in the "other" location types for non-ill shooters, suggesting more predictability by place
@@ -278,8 +454,9 @@ ggplot(mass_shootings, aes(x = total_victims, y = location_type, color = prior_m
     title = "total victims, mental illness and location type"
   ) +
   xlim(0,120)
-
 ```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-11-1.png" width="672" />
 
 Make sure to provide a couple of sentences of written interpretation of your tables/figures. Graphs and tables alone will not be sufficient to answer this question.
 
@@ -295,14 +472,24 @@ The dataset we will use consists of credit card transactions and it includes inf
 
 The dataset is too large to be hosted on Canvas or Github, so please download it from dropbox https://www.dropbox.com/sh/q1yk8mmnbbrzavl/AAAxzRtIhag9Nc_hODafGV2ka?dl=0 and save it in your `dsb` repo, under the `data` folder
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
 
-card_fraud <- read_csv(here::here("data", "card_fraud.csv"))
-
-glimpse(card_fraud)
+```
+## Rows: 671,028
+## Columns: 14
+## $ trans_date_trans_time <dttm> 2019-02-22 07:32:58, 2019-02-16 15:07:20, 2019-…
+## $ trans_year            <dbl> 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2020, …
+## $ category              <chr> "entertainment", "kids_pets", "personal_care", "…
+## $ amt                   <dbl> 7.79, 3.89, 8.43, 40.00, 54.04, 95.61, 64.95, 3.…
+## $ city                  <chr> "Veedersburg", "Holloway", "Arnold", "Apison", "…
+## $ state                 <chr> "IN", "OH", "MO", "TN", "CO", "GA", "MN", "AL", …
+## $ lat                   <dbl> 40.1186, 40.0113, 38.4305, 35.0149, 39.4584, 32.…
+## $ long                  <dbl> -87.2602, -80.9701, -90.3870, -85.0164, -106.385…
+## $ city_pop              <dbl> 4049, 128, 35439, 3730, 277, 1841, 136, 190178, …
+## $ job                   <chr> "Development worker, community", "Child psychoth…
+## $ dob                   <date> 1959-10-19, 1946-04-03, 1985-03-31, 1991-01-28,…
+## $ merch_lat             <dbl> 39.41679, 39.74585, 37.73078, 34.53277, 39.95244…
+## $ merch_long            <dbl> -87.52619, -81.52477, -91.36875, -84.10676, -106…
+## $ is_fraud              <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 ```
 
 The data dictionary is as follows
@@ -326,8 +513,8 @@ The data dictionary is as follows
 
 -   In this dataset, how likely are fraudulent transactions? Generate a table that summarizes the number and frequency of fraudulent transactions per year.
 
-```{r}
 
+```r
 fraud_frequency <- card_fraud %>% 
   group_by(is_fraud) %>% 
   summarise(count = n())
@@ -338,12 +525,20 @@ fraud_frequency <- fraud_frequency %>%
   mutate(percent_frequency = ifelse (is_fraud == 1,100*count/fraud_count,100*count/fraud_count))
 #check the value: so fraud happen in just over half a percent of transcations
 print(fraud_frequency)
+```
 
+```
+## # A tibble: 2 × 3
+##   is_fraud  count percent_frequency
+##      <dbl>  <int>             <dbl>
+## 1        0 667092            99.4  
+## 2        1   3936             0.587
 ```
 
 -   How much money (in US\$ terms) are fraudulent transactions costing the company? Generate a table that summarizes the total amount of legitimate and fraudulent transactions per year and calculate the % of fraudulent transactions, in US\$ terms.
 
-```{r}
+
+```r
 #let's create the fraud indicator first
 fraud_indicator <- card_fraud %>% 
   group_by(is_fraud) 
@@ -358,12 +553,20 @@ summary_data <- summary_data %>%
   mutate(percent_frequency = ifelse (is_fraud == 1,100*total_amount/total_amount_both,100*total_amount/total_amount_both))
 #check the value: so even though fraud only accounts for 0.5% of cases, it accounts for 4.39 of total transaction value a 10x increase!
 print(summary_data)
+```
 
+```
+## # A tibble: 2 × 3
+##   is_fraud total_amount percent_frequency
+##      <dbl>        <dbl>             <dbl>
+## 1        0    45108815.             95.6 
+## 2        1     2075089.              4.40
 ```
 
 -   Generate a histogram that shows the distribution of amounts charged to credit card, both for legitimate and fraudulent accounts. Also, for both types of transactions, calculate some quick summary statistics.
 
-```{r}
+
+```r
 #first let's store the data for different fraud states
 is_fraud_histo <- card_fraud %>% 
   filter(is_fraud == 1)
@@ -380,26 +583,100 @@ ggplot() +
     title = "Overlay of transaction value by fraudulent and non-fradulent transactions"
   ) +
   xlim(0,1500)
+```
 
+```
+## Warning: Removed 680 rows containing non-finite values (`stat_density()`).
+```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+
+```r
 #summary stats for fraud
 mean(is_fraud_histo$amt)
+```
+
+```
+## [1] 527.2076
+```
+
+```r
 median(is_fraud_histo$amt)
+```
+
+```
+## [1] 368.83
+```
+
+```r
 sd(is_fraud_histo$amt)
+```
+
+```
+## [1] 391.2915
+```
+
+```r
 min(is_fraud_histo$amt)
+```
+
+```
+## [1] 1.06
+```
+
+```r
 max(is_fraud_histo$amt)
+```
+
+```
+## [1] 1334.07
+```
+
+```r
 #summary stats for not fraud
 mean(is_not_fraud_histo$amt)
+```
+
+```
+## [1] 67.62008
+```
+
+```r
 median(is_not_fraud_histo$amt)
+```
+
+```
+## [1] 47.17
+```
+
+```r
 sd(is_not_fraud_histo$amt)
+```
+
+```
+## [1] 155.2949
+```
+
+```r
 min(is_not_fraud_histo$amt)
+```
+
+```
+## [1] 1
+```
+
+```r
 max(is_not_fraud_histo$amt)
+```
 
-
+```
+## [1] 27119.77
 ```
 
 -   What types of purchases are most likely to be instances of fraud? Consider category of merchants and produce a bar chart that shows % of total fraudulent transactions sorted in order.
 
-```{r}
+
+```r
 #create the table first
 fraud_by_category <- card_fraud %>%
   group_by(category) %>%
@@ -418,9 +695,9 @@ ggplot(data = fraud_by_category, aes(x = category,  y = fraud_percentage, fill =
   ggtitle("Fraudulent Transactions by Category of Merchants") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_discrete(name = "Category of Merchants")
-
-
 ```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-16-1.png" width="672" />
 
 -   When is fraud more prevalent? Which days, months, hours? To create new variables to help you in your analysis, we use the `lubridate` package and the following code
 
@@ -441,8 +718,8 @@ mutate(
     )
 ```
 
-```{r}
 
+```r
 library(lubridate)
 
 # Create new variables for analysis
@@ -468,7 +745,11 @@ ggplot(data = fraud_by_weekday, aes(x = weekday, y = fraud_percentage, fill = we
   xlab("Weekday") +
   ylab("% of Fraudulent Transactions") +
   ggtitle("Prevalence of Fraud by Weekday")
+```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+
+```r
 #now by month
 fraud_by_month <- card_fraud %>%
   group_by(month_name) %>%
@@ -481,7 +762,11 @@ ggplot(data = fraud_by_month, aes(x = month_name, y = fraud_percentage, fill = m
   xlab("Month") +
   ylab("% of Fraudulent Transactions") +
   ggtitle("Prevance of Fraud by Month")
+```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-17-2.png" width="672" />
+
+```r
 #now by hour
 fraud_by_hour <- card_fraud %>%
   group_by(hour) %>%
@@ -494,14 +779,14 @@ ggplot(data = fraud_by_hour, aes(x = hour, y = fraud_percentage)) +
   xlab("Hour") +
   ylab("% of Fraudulent Transactions") +
   ggtitle("Prevalence of Fraud by Hour")
-
-
-
 ```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-17-3.png" width="672" />
 
 -   Is fraud related to distance? The distance between a card holder's home and the location of the transaction can be a feature that is related to fraud. To calculate distance, we need the latidue/longitude of card holders's home and the latitude/longitude of the transaction, and we will use the [Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula) to calculate distance. I adapted code to [calculate distance between two points on earth](https://www.geeksforgeeks.org/program-distance-two-points-earth/amp/) which you can find below
 
-```{r}
+
+```r
 # distance between card holder's home and transaction
 # code adapted from https://www.geeksforgeeks.org/program-distance-two-points-earth/amp/
 
@@ -530,8 +815,14 @@ ggplot(data = card_fraud, aes(x = is_fraud, y = distance_km)) +
   ylab("Distance (km)") +
   ggtitle("Relationship between Distance and Fraud") +
   theme_minimal()
+```
 
 ```
+## Warning: Continuous x aesthetic
+## ℹ did you forget `aes(group = ...)`?
+```
+
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-18-1.png" width="672" />
 
 Plot a boxplot or a violin plot that looks at the relationship of distance and `is_fraud`. Does distance seem to be a useful feature in explaining fraud?
 
@@ -551,9 +842,8 @@ You will use
 
 We will get energy data from the Our World in Data website, and CO2 and GDP per capita emissions from the World Bank, using the `wbstats`package.
 
-```{r}
-#| message: false
-#| warning: false
+
+```r
 rm(list = ls())
 # Download electricity data
 url <- "https://nyc3.digitaloceanspaces.com/owid-public/data/energy/owid-energy-data.csv"
@@ -625,7 +915,11 @@ merged_data <- left_join(merged_data, co2_percap, by = c('iso_code', "year"))
 
 #example code given
 knitr::include_graphics(here::here("images", "electricity-co2-gdp.png"), error = FALSE)
+```
 
+![](../../images/electricity-co2-gdp.png)<!-- -->
+
+```r
 #############Question 1################
 #######################################
 #Question 1: let's first try electricity generation stacked area chart for South Africa --> as expected majority coal
@@ -635,12 +929,20 @@ zaf_energy <- merged_data %>%
 
 ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) + 
   geom_area(colour="grey90", alpha = 0.5, position = "fill") 
+```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-19-2.png" width="672" />
+
+```r
 #give South Africa's electricity crisis, I was curious to see whether the increase share in renewables is attributable to dropping output overall, 
 # as we can see from the below, energy output overall has declined since 2010 :( 
 ggplot(zaf_energy, aes(x = year, y = energy_use, fill = energy_source)) + 
   geom_bar(stat = "identity") 
+```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-19-3.png" width="672" />
+
+```r
 #############Question 2################
 #######################################
 
@@ -654,13 +956,14 @@ ggplot(merged_data, aes(x = GDPpercap, y = co2percap, color = year))+
        shape = "GDP high (circle) vs low (triangle)")+
   scale_color_gradientn(colours = rainbow(10))+
   scale_shape_manual(values = c("circle"=1, "triangle"=2))
+```
 
+<img src="/blogs/homework2_files/figure-html/unnamed-chunk-19-4.png" width="672" />
 
+```r
 #############Question 3################
 #######################################
 #let's look at KwH and GDP per capita
-
-
 ```
 
 Specific questions:
@@ -672,14 +975,7 @@ Specific questions:
     -   An aside: There is a great package called [`countrycode`](https://github.com/vincentarelbundock/countrycode) that helps solve the problem of inconsistent country names (Is it UK? United Kingdom? Great Britain?). `countrycode()` takes as an input a country's name in a specific format and outputs it using whatever format you specify.
 3.  Write a function that takes as input any country's name and returns all three graphs. You can use the `patchwork` package to arrange the three graphs as shown below
 
-```{r, echo=FALSE, out.width="100%"}
 
-
-
-
-
-
-```
 
 
 # Deliverables
