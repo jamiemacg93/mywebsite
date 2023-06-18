@@ -50,7 +50,7 @@ library(tidymodels)
 ## ✖ dplyr::lag()      masks stats::lag()
 ## ✖ yardstick::spec() masks readr::spec()
 ## ✖ recipes::step()   masks stats::step()
-## • Dig deeper into tidy modeling with R at https://www.tmwr.org
+## • Learn how to get started at https://www.tidymodels.org/start/
 ```
 
 ```r
@@ -109,64 +109,6 @@ library(kernlab)
 ## The following object is masked from 'package:ggplot2':
 ## 
 ##     alpha
-```
-
-```r
-library(tidyquant)
-```
-
-```
-## Loading required package: PerformanceAnalytics
-## Loading required package: xts
-## Loading required package: zoo
-## 
-## Attaching package: 'zoo'
-## 
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-## 
-## 
-## ######################### Warning from 'xts' package ##########################
-## #                                                                             #
-## # The dplyr lag() function breaks how base R's lag() function is supposed to  #
-## # work, which breaks lag(my_xts). Calls to lag(my_xts) that you type or       #
-## # source() into this session won't work correctly.                            #
-## #                                                                             #
-## # Use stats::lag() to make sure you're not using dplyr::lag(), or you can add #
-## # conflictRules('dplyr', exclude = 'lag') to your .Rprofile to stop           #
-## # dplyr from breaking base R's lag() function.                                #
-## #                                                                             #
-## # Code in packages is not affected. It's protected by R's namespace mechanism #
-## # Set `options(xts.warn_dplyr_breaks_lag = FALSE)` to suppress this warning.  #
-## #                                                                             #
-## ###############################################################################
-## 
-## Attaching package: 'xts'
-## 
-## The following objects are masked from 'package:dplyr':
-## 
-##     first, last
-## 
-## 
-## Attaching package: 'PerformanceAnalytics'
-## 
-## The following object is masked from 'package:graphics':
-## 
-##     legend
-## 
-## Loading required package: quantmod
-## Loading required package: TTR
-## 
-## Attaching package: 'TTR'
-## 
-## The following object is masked from 'package:dials':
-## 
-##     momentum
-## 
-## Registered S3 method overwritten by 'quantmod':
-##   method            from
-##   as.zoo.data.frame zoo
 ```
 # Create database ---------------------------------------------------------
 #how big is big? the central question of this mini project is how should we group the world's countries?
