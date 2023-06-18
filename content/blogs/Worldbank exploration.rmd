@@ -17,13 +17,6 @@ options(scipen = 999) #disable scientific notation
 library(tidyverse)
 library(tidymodels)
 library(GGally)
-library(sf)
-library(leaflet)
-library(janitor)
-library(rpart.plot)
-library(here)
-library(scales)
-library(vip)
 library(C50)
 library(WDI)
 library(cluster)
@@ -31,15 +24,14 @@ library(factoextra)
 library(NbClust)
 library(mclust)
 library(kernlab)
-library(caret)
 library(tidyquant)
 
 ```
-# create database ---------------------------------------------------------
-#how big is big? the central question of this mini project is "what is a lot?" for a range of commonly understood and used development indicators 
+# Create database ---------------------------------------------------------
+#how big is big? the central question of this mini project is how should we group the world's countries?
 
-#let's start with GDP per capita, GDP overall, populatio total, Energy use, urgan population, poverty porportion  
-```{r}
+#let's start with GDP per capita, GDP overall, population total, Energy use, urgan population, poverty porportion  
+```{r, warning=FALSE}
 #for the sake of learning, I'm going to keep the variables extremely simple: GDP, population, poverty, urbanisation and energy
 indicators <- c("NY.GDP.PCAP.CD", "NY.GDP.MKTP.CD", "SP.POP.TOTL","SP.URB.TOTL.IN.ZS")
 #make sure we only have UN recognised countries (rather than regions)
@@ -67,7 +59,7 @@ data %>%
   
 
 # Inspect each histogram --------------------------------------------------
-```{r}
+```{r, warning=FALSE}
 library(ggplot2)
 library(dplyr)
 
@@ -128,7 +120,7 @@ Now that we have a sense of the data, let's see how different algorithms would g
 library(cluster)
 library(factoextra)
 
-```{r}
+```{r, warning=FALSE}
 # hierarchichal clustering start ------------------------------------------
 
 
@@ -165,14 +157,14 @@ hc_2020 <- hclust(dist_matrix_2020, method = "ward.D2")
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 # Plot the dendrograms --> way too many, it looks like there's a lot of variation in the data. 
 plot(hc_1970, main = "Hierarchical Clustering for 1970", labels = country_names_1970,cex = 0.7)
 plot(hc_2020, main = "Hierarchical Clustering for 2020", labels = country_names_2020,cex = 0.7)
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 # Choose a number of clusters to simplify the analysis
 n_clusters <- 5  # Replace with the number of clusters you decide on
 
@@ -190,7 +182,7 @@ head(data_2020_numeric)
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 # Create subset of 2020 data
 data_2020_numeric_subset <- data_2020_numeric[data_2020_numeric$country %in% data_1970_numeric$country, ]
 
@@ -203,7 +195,7 @@ data_combined <- rbind(data_1970_numeric, data_2020_numeric_subset)
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 # Create scatter plot --> try shape of dots to distinguish groups and color to distinguish year --> a bit unclear
 ggplot(data_combined, aes(x = gdp_percap, y = pop, color = year)) +
   geom_point(aes(shape = as.factor(cluster)),size = 1) +
@@ -214,7 +206,7 @@ ggplot(data_combined, aes(x = gdp_percap, y = pop, color = year)) +
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 # Create scatter plot --> Let's try use colour for group and use greyscale to distinguish year --> this is a bit better but a bit crowded.
 ggplot(data_combined, aes(x = gdp_percap, y = pop, color = as.factor(cluster), alpha = year)) +
   geom_point(size = 1) +
@@ -226,7 +218,7 @@ ggplot(data_combined, aes(x = gdp_percap, y = pop, color = as.factor(cluster), a
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 # Let's take Highlights from each cluster --------------------------------------------
 
 
@@ -255,7 +247,7 @@ ggplot(subset_merged, aes(x = gdp_percap, y = pop, color = as.factor(cluster), a
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #let's try others --> GDP/capita vs Urban Population over time --> we can see greyer countries at the bottom
 ggplot(subset_merged, aes(x = gdp_percap, y = urban, color = as.factor(cluster), alpha = factor(year), group = country)) +
   geom_point() +
@@ -268,7 +260,7 @@ ggplot(subset_merged, aes(x = gdp_percap, y = urban, color = as.factor(cluster),
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #Total population vs urban population
 ggplot(subset_merged, aes(x = pop, y = urban, color = as.factor(cluster), alpha = factor(year), group = country)) +
   geom_point() +
@@ -281,7 +273,7 @@ ggplot(subset_merged, aes(x = pop, y = urban, color = as.factor(cluster), alpha 
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #GDP vs urban population
 ggplot(subset_merged, aes(x = gdp, y = urban, color = as.factor(cluster), alpha = factor(year), group = country)) +
   geom_point() +
@@ -294,7 +286,7 @@ ggplot(subset_merged, aes(x = gdp, y = urban, color = as.factor(cluster), alpha 
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 #GDP vs GDP per capita
 ggplot(subset_merged, aes(x = gdp, y = gdp_percap, color = as.factor(cluster), alpha = factor(year), group = country)) +
   geom_point() +
@@ -311,7 +303,7 @@ ggplot(subset_merged, aes(x = gdp, y = gdp_percap, color = as.factor(cluster), a
 
 
 
-```{r}
+```{r, warning=FALSE}
 
 # k-mean clustering start -------------------------------------------------
 

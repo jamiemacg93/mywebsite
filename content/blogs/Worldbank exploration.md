@@ -19,46 +19,6 @@ library(tidyverse)
 ```
 
 ```
-## Warning: package 'tidyverse' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'ggplot2' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'tibble' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'tidyr' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'readr' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'purrr' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'dplyr' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'stringr' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'forcats' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'lubridate' was built under R version 4.2.3
-```
-
-```
 ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.2     ✔ readr     2.1.4
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.0
@@ -76,68 +36,13 @@ library(tidymodels)
 ```
 
 ```
-## Warning: package 'tidymodels' was built under R version 4.2.3
-```
-
-```
 ## ── Attaching packages ────────────────────────────────────── tidymodels 1.1.0 ──
 ## ✔ broom        1.0.5     ✔ rsample      1.1.1
 ## ✔ dials        1.2.0     ✔ tune         1.1.1
 ## ✔ infer        1.0.4     ✔ workflows    1.1.3
 ## ✔ modeldata    1.1.0     ✔ workflowsets 1.0.1
 ## ✔ parsnip      1.1.0     ✔ yardstick    1.2.0
-## ✔ recipes      1.0.6
-```
-
-```
-## Warning: package 'broom' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'dials' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'scales' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'infer' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'modeldata' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'parsnip' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'recipes' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'rsample' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'tune' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'workflows' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'workflowsets' was built under R version 4.2.3
-```
-
-```
-## Warning: package 'yardstick' was built under R version 4.2.3
-```
-
-```
+## ✔ recipes      1.0.6     
 ## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
 ## ✖ scales::discard() masks purrr::discard()
 ## ✖ dplyr::filter()   masks stats::filter()
@@ -145,15 +50,11 @@ library(tidymodels)
 ## ✖ dplyr::lag()      masks stats::lag()
 ## ✖ yardstick::spec() masks readr::spec()
 ## ✖ recipes::step()   masks stats::step()
-## • Search for functions across packages at https://www.tidymodels.org/find/
+## • Dig deeper into tidy modeling with R at https://www.tmwr.org
 ```
 
 ```r
 library(GGally)
-```
-
-```
-## Warning: package 'GGally' was built under R version 4.2.3
 ```
 
 ```
@@ -163,120 +64,10 @@ library(GGally)
 ```
 
 ```r
-library(sf)
-```
-
-```
-## Warning: package 'sf' was built under R version 4.2.3
-```
-
-```
-## Linking to GEOS 3.9.3, GDAL 3.5.2, PROJ 8.2.1; sf_use_s2() is TRUE
-```
-
-```r
-library(leaflet)
-```
-
-```
-## Warning: package 'leaflet' was built under R version 4.2.3
-```
-
-```r
-library(janitor)
-```
-
-```
-## Warning: package 'janitor' was built under R version 4.2.3
-```
-
-```
-## 
-## Attaching package: 'janitor'
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     chisq.test, fisher.test
-```
-
-```r
-library(rpart.plot)
-```
-
-```
-## Warning: package 'rpart.plot' was built under R version 4.2.3
-```
-
-```
-## Loading required package: rpart
-## 
-## Attaching package: 'rpart'
-## 
-## The following object is masked from 'package:dials':
-## 
-##     prune
-```
-
-```r
-library(here)
-```
-
-```
-## Warning: package 'here' was built under R version 4.2.3
-```
-
-```
-## here() starts at C:/Users/Jamie/Documents/mydsb2023/mywebsite
-```
-
-```r
-library(scales)
-library(vip)
-```
-
-```
-## Warning: package 'vip' was built under R version 4.2.3
-```
-
-```
-## 
-## Attaching package: 'vip'
-## 
-## The following object is masked from 'package:utils':
-## 
-##     vi
-```
-
-```r
 library(C50)
-```
-
-```
-## Warning: package 'C50' was built under R version 4.2.3
-```
-
-```r
 library(WDI)
-```
-
-```
-## Warning: package 'WDI' was built under R version 4.2.3
-```
-
-```r
 library(cluster)
-```
-
-```
-## Warning: package 'cluster' was built under R version 4.2.3
-```
-
-```r
 library(factoextra)
-```
-
-```
-## Warning: package 'factoextra' was built under R version 4.2.3
 ```
 
 ```
@@ -286,10 +77,6 @@ library(factoextra)
 ```r
 library(NbClust)
 library(mclust)
-```
-
-```
-## Warning: package 'mclust' was built under R version 4.2.3
 ```
 
 ```
@@ -325,60 +112,13 @@ library(kernlab)
 ```
 
 ```r
-library(caret)
-```
-
-```
-## Warning: package 'caret' was built under R version 4.2.3
-```
-
-```
-## Loading required package: lattice
-## 
-## Attaching package: 'caret'
-## 
-## The following objects are masked from 'package:yardstick':
-## 
-##     precision, recall, sensitivity, specificity
-## 
-## The following object is masked from 'package:purrr':
-## 
-##     lift
-```
-
-```r
 library(tidyquant)
 ```
 
 ```
-## Warning: package 'tidyquant' was built under R version 4.2.3
-```
-
-```
 ## Loading required package: PerformanceAnalytics
-```
-
-```
-## Warning: package 'PerformanceAnalytics' was built under R version 4.2.3
-```
-
-```
 ## Loading required package: xts
-```
-
-```
-## Warning: package 'xts' was built under R version 4.2.3
-```
-
-```
 ## Loading required package: zoo
-```
-
-```
-## Warning: package 'zoo' was built under R version 4.2.3
-```
-
-```
 ## 
 ## Attaching package: 'zoo'
 ## 
@@ -404,10 +144,6 @@ library(tidyquant)
 ## 
 ## Attaching package: 'xts'
 ## 
-## The following object is masked from 'package:leaflet':
-## 
-##     addLegend
-## 
 ## The following objects are masked from 'package:dplyr':
 ## 
 ##     first, last
@@ -420,21 +156,7 @@ library(tidyquant)
 ##     legend
 ## 
 ## Loading required package: quantmod
-```
-
-```
-## Warning: package 'quantmod' was built under R version 4.2.3
-```
-
-```
 ## Loading required package: TTR
-```
-
-```
-## Warning: package 'TTR' was built under R version 4.2.3
-```
-
-```
 ## 
 ## Attaching package: 'TTR'
 ## 
@@ -446,10 +168,10 @@ library(tidyquant)
 ##   method            from
 ##   as.zoo.data.frame zoo
 ```
-# create database ---------------------------------------------------------
-#how big is big? the central question of this mini project is "what is a lot?" for a range of commonly understood and used development indicators 
+# Create database ---------------------------------------------------------
+#how big is big? the central question of this mini project is how should we group the world's countries?
 
-#let's start with GDP per capita, GDP overall, populatio total, Energy use, urgan population, poverty porportion  
+#let's start with GDP per capita, GDP overall, population total, Energy use, urgan population, poverty porportion  
 
 ```r
 #for the sake of learning, I'm going to keep the variables extremely simple: GDP, population, poverty, urbanisation and energy
@@ -476,117 +198,10 @@ data %>%
 ```
 
 ```
-## Warning in warn_if_args_exist(list(...)): Extra arguments: "size", "alpha" are
-## being ignored.  If these are meant to be aesthetics, submit them using the
-## 'mapping' variable within ggpairs with ggplot2::aes or ggplot2::aes_string.
-```
-
-```
-## Warning: Removed 101 rows containing non-finite values (`stat_boxplot()`).
-```
-
-```
-## Warning: Removed 1 rows containing non-finite values (`stat_boxplot()`).
-```
-
-```
-## Warning: Removed 2 rows containing non-finite values (`stat_boxplot()`).
-```
-
-```
-## Warning: Removed 101 rows containing non-finite values (`stat_boxplot()`).
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 101 rows containing non-finite values (`stat_bin()`).
-```
-
-```
-## Warning: Removed 101 rows containing non-finite values (`stat_density()`).
-```
-
-```
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 101 rows containing missing values
-
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 101 rows containing missing values
-
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 101 rows containing missing values
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 1 rows containing non-finite values (`stat_bin()`).
-```
-
-```
-## Warning: Removed 101 rows containing missing values (`geom_point()`).
-```
-
-```
-## Warning: Removed 1 rows containing non-finite values (`stat_density()`).
-```
-
-```
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 3 rows containing missing values
-```
-
-```
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 101 rows containing missing values
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 2 rows containing non-finite values (`stat_bin()`).
-```
-
-```
-## Warning: Removed 101 rows containing missing values (`geom_point()`).
-```
-
-```
-## Warning: Removed 3 rows containing missing values (`geom_point()`).
-```
-
-```
-## Warning: Removed 2 rows containing non-finite values (`stat_density()`).
-```
-
-```
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 101 rows containing missing values
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 101 rows containing non-finite values (`stat_bin()`).
-```
-
-```
-## Warning: Removed 101 rows containing missing values (`geom_point()`).
-## Removed 101 rows containing missing values (`geom_point()`).
-## Removed 101 rows containing missing values (`geom_point()`).
-```
-
-```
-## Warning: Removed 101 rows containing non-finite values (`stat_density()`).
 ```
 
 <img src="WORLDB~1/figure-html/unnamed-chunk-2-1.png" width="672" />
@@ -648,49 +263,14 @@ for (var in vars) {
 ```
 
 ```
-## Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
-## ℹ Please use tidy evaluation idioms with `aes()`.
-## ℹ See also `vignette("ggplot2-in-packages")` for more information.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-## generated.
-```
-
-```
-## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-## ℹ Please use `linewidth` instead.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-## generated.
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 89 rows containing non-finite values (`stat_bin()`).
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 12 rows containing non-finite values (`stat_bin()`).
 ```
 
 <img src="WORLDB~1/figure-html/unnamed-chunk-3-1.png" width="672" />
 
 ```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 1 rows containing non-finite values (`stat_bin()`).
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
@@ -698,36 +278,14 @@ for (var in vars) {
 
 ```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 1 rows containing non-finite values (`stat_bin()`).
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 1 rows containing non-finite values (`stat_bin()`).
 ```
 
 <img src="WORLDB~1/figure-html/unnamed-chunk-3-3.png" width="672" />
 
 ```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 89 rows containing non-finite values (`stat_bin()`).
-```
-
-```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-```
-## Warning: Removed 12 rows containing non-finite values (`stat_bin()`).
 ```
 
 <img src="WORLDB~1/figure-html/unnamed-chunk-3-4.png" width="672" />
