@@ -1,9 +1,9 @@
 ---
-title: "Mass shootings"
+title: "Grouping the World's countries"
 date: "2023-06-16"
-description: Mass shootings in the US
+description: Unsupervised learning with country development indicators
 draft: no
-image: guns.jpg
+image: laskowski-tri-optimal.jpg
 keywords: ''
 slug: country
 categories:
@@ -11,19 +11,21 @@ categories:
 - ''
 ---
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message=FALSE, results=hide}
 # download libraries ------------------------------------------------------
 options(scipen = 999) #disable scientific notation
-library(tidyverse)
-library(tidymodels)
-library(GGally)
-library(C50)
-library(WDI)
-library(cluster)
-library(factoextra)
-library(NbClust)
-library(mclust)
-library(kernlab)
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(tidymodels)
+  library(GGally)
+  library(C50)
+  library(WDI)
+  library(cluster)
+  library(factoextra)
+  library(NbClust)
+  library(mclust)
+})
+
 
 ```
 # Create database ---------------------------------------------------------
