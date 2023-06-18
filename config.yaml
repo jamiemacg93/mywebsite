@@ -38,10 +38,10 @@ params:
   footer:
     copyright: Jamie Data
     enable: yes
-    quicklinks:
-      - alt: HTML5 UP
-        text: 'Design: '
-        url: https://www.html5up.net
+    #quicklinks:
+     # - alt: HTML5 UP
+      #  text: 'Design: '
+       # url: https://www.html5up.net
     social:
      # - icon: fa-twitter
       #  label: Twitter
