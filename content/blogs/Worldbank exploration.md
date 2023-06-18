@@ -1,14 +1,15 @@
 ---
-title: "Mass shootings"
+title: "Grouping the world's countries"
 date: "2023-06-16"
-description: Mass shootings in the US
-draft: no
-image: guns.jpg
+description: Unsupervised learning with country development indicators
+output: word_document
+image: "laskowski-tri-optimal.jpg"
 keywords: ''
 slug: country
 categories:
 - ''
 - ''
+draft: no
 ---
 
 
@@ -16,99 +17,15 @@ categories:
 # download libraries ------------------------------------------------------
 options(scipen = 999) #disable scientific notation
 library(tidyverse)
-```
-
-```
-## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.2     ✔ readr     2.1.4
-## ✔ forcats   1.0.0     ✔ stringr   1.5.0
-## ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
-## ✔ purrr     1.0.1     
-## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-```
-
-```r
 library(tidymodels)
-```
-
-```
-## ── Attaching packages ────────────────────────────────────── tidymodels 1.1.0 ──
-## ✔ broom        1.0.5     ✔ rsample      1.1.1
-## ✔ dials        1.2.0     ✔ tune         1.1.1
-## ✔ infer        1.0.4     ✔ workflows    1.1.3
-## ✔ modeldata    1.1.0     ✔ workflowsets 1.0.1
-## ✔ parsnip      1.1.0     ✔ yardstick    1.2.0
-## ✔ recipes      1.0.6     
-## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
-## ✖ scales::discard() masks purrr::discard()
-## ✖ dplyr::filter()   masks stats::filter()
-## ✖ recipes::fixed()  masks stringr::fixed()
-## ✖ dplyr::lag()      masks stats::lag()
-## ✖ yardstick::spec() masks readr::spec()
-## ✖ recipes::step()   masks stats::step()
-## • Learn how to get started at https://www.tidymodels.org/start/
-```
-
-```r
 library(GGally)
-```
-
-```
-## Registered S3 method overwritten by 'GGally':
-##   method from   
-##   +.gg   ggplot2
-```
-
-```r
 library(C50)
 library(WDI)
 library(cluster)
 library(factoextra)
-```
-
-```
-## Welcome! Want to learn more? See two factoextra-related books at https://goo.gl/ve3WBa
-```
-
-```r
 library(NbClust)
 library(mclust)
-```
-
-```
-## Package 'mclust' version 6.0.0
-## Type 'citation("mclust")' for citing this R package in publications.
-## 
-## Attaching package: 'mclust'
-## 
-## The following object is masked from 'package:purrr':
-## 
-##     map
-```
-
-```r
 library(kernlab)
-```
-
-```
-## 
-## Attaching package: 'kernlab'
-## 
-## The following object is masked from 'package:scales':
-## 
-##     alpha
-## 
-## The following object is masked from 'package:purrr':
-## 
-##     cross
-## 
-## The following object is masked from 'package:ggplot2':
-## 
-##     alpha
 ```
 # Create database ---------------------------------------------------------
 #how big is big? the central question of this mini project is how should we group the world's countries?

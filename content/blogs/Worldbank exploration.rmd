@@ -2,16 +2,17 @@
 title: "Grouping the World's countries"
 date: "2023-06-16"
 description: Unsupervised learning with country development indicators
-draft: no
-image: laskowski-tri-optimal.jpg
+output: word_document
+image: "laskowski-tri-optimal.jpg"
 keywords: ''
 slug: country
 categories:
 - ''
 - ''
+draft: no
 ---
 
-```{r, warning=FALSE, message=FALSE, results=hide}
+```{r, warning=FALSE}
 # download libraries ------------------------------------------------------
 options(scipen = 999) #disable scientific notation
 suppressPackageStartupMessages({
