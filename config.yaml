@@ -16,6 +16,7 @@ params:
     address:
       - city: London
         country: UK
+        postcode: NW16XY
         #street: Street
         #title: Address
     buttonClear: Clear
@@ -81,10 +82,10 @@ params:
   tiles:
     enable: yes
     showcase:
-      - image: lbs.jpg
-        subtitle: Homework exercise at LBS
-        title: predicting credit card fraud using supervised ML
-        url: blogs/risk_return
+      - image: laskowski-tri-optimal.jpg
+        subtitle: Unsupervised learning analysis of the world's development indicators
+        title: Grouping the world's countries
+        url: blogs/country
       - image: guns.jpg
         subtitle: We found some interesting associations with mental health
         title: Data exploration - mass shootings
@@ -97,22 +98,22 @@ params:
         subtitle: Found some interesting insights about South Africa's energy crisis
         title: Energy output - South Africa focus
         url: blogs/energy
-      - image: pic05.jpg
-        subtitle: Ipsum Dolor Sit Amet
-        title: Consequat
-        url: blogs/ipsum
-      - image: pic06.jpg
-        subtitle: Feugiat Amet Tempus
-        title: Etiam
-        url: blogs/ipsum
-  two:
-    buttonText: Get Started
-    enable: yes
-    subtitle: "Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero.
-      \r\n    Mauris aliquet magna magna sed nunc rhoncus pharetra. \r\n    Pellentesque
-      condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia
-      pellentesque lorem ipsum dolor. \r\n    Nullam et orci eu lorem consequat tincidunt.
-      Vivamus et sagittis libero.\r\n    Mauris aliquet magna magna sed nunc rhoncus
-      amet pharetra et feugiat tempus."
-    title: Massa libero
-    url: blogs
+    #  - image: pic05.jpg
+     #   subtitle: Ipsum Dolor Sit Amet
+      #  title: Consequat
+       # url: blogs/ipsum
+    #  - image: pic06.jpg
+     #   subtitle: Feugiat Amet Tempus
+      #  title: Etiam
+       # url: blogs/ipsum
+ # two:
+  #  buttonText: Get Started
+   # enable: yes
+    #subtitle: "Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero.
+     # \r\n    Mauris aliquet magna magna sed nunc rhoncus pharetra. \r\n    Pellentesque
+    #  condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia
+     # pellentesque lorem ipsum dolor. \r\n    Nullam et orci eu lorem consequat tincidunt.
+      #Vivamus et sagittis libero.\r\n    Mauris aliquet magna magna sed nunc rhoncus
+    #  amet pharetra et feugiat tempus."
+   # title: Massa libero
+    #url: blogs
