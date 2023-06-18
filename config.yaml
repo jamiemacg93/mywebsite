@@ -5,7 +5,7 @@ theme: forty
 googleAnalytics: ''
 disqusShortname: ''
 params:
-  banner:
+  banner: data.jpg
     buttonText: Get Started
     subtitle: "Jamie McGraw's website for Data Science projects"
       # A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP
@@ -30,7 +30,7 @@ params:
         title: Phone
   custom_css: []
   custom_js: []
-  description: Your description
+  description: 
   error404:
     heading: Page couldn't be found
     text: Please visit [this page](/)
